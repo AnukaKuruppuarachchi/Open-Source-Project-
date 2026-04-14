@@ -436,7 +436,7 @@ void test_scene_setup::restart_mode() {
 						mode.find(new_id)->hide_in_scoreboard = true;
 						const auto opponent_id = mode.find(new_id)->controlled_character_id;
 						mode.teleport_to_next_spawn(input, new_id, opponent_id);
-						mode.find(new_id)->allow_respawn = true;
+						mode.find(new_id)->allow_respawn = false;
 						opponents[p.unique_name] = opponent_id;
 					}
 				}

@@ -23,9 +23,31 @@ void resurrect(const logic_step step, const E& typed_handle, const float spawn_p
 		step.queue_deletion_of(head, "Lying head of resurrected character");
 	}
 
+	const auto arm_upper = cosm[sentience.detached.arm_upper];
+	const auto arm_lower = cosm[sentience.detached.arm_lower];
+
+	if (arm_upper) {
+		step.queue_deletion_of(arm_upper, "Detached arm of resurrected character");
+	}
+
+	if (arm_lower) {
+		step.queue_deletion_of(arm_lower, "Detached arm of resurrected character");
+	}
+
+	const auto lying_corpse = cosm[sentience.detached.lying_corpse];
+
+	if (lying_corpse) {
+		step.queue_deletion_of(lying_corpse, "Lying corpse of resurrected character");
+	}
+
 	sentience.detached = {};
 	sentience.when_corpse_catched_fire = {};
 	sentience.when_knocked_out = {};
+	sentience.when_arms_detached = {};
+	sentience.pending_arm_splatters = 0;
+	sentience.arms_queued_for_detach = 0;
+	sentience.idle_blood_drip_count = 0;
+	sentience.last_corpse_damage_direction = vec2::zero;
 
 	if (sentience.has_exploded) {
 		sentience.has_exploded = false;
@@ -45,7 +67,9 @@ void handle_corpse_damage(
 	const logic_step step,
 	const entity_handle subject,
 	components::sentience& sentience,
-	const invariants::sentience& sentience_def
+	const invariants::sentience& sentience_def,
+	const vec2 impact_direction = vec2::zero,
+	const vec2 point_of_impact = vec2::zero
 );
 
 void handle_corpse_detonation(
@@ -60,7 +84,8 @@ void perform_knockout(
 	const entity_id& subject_id, 
 	const logic_step step, 
 	const vec2 direction,
-	const damage_origin& origin
+	const damage_origin& origin,
+	const vec2 point_of_impact = vec2::zero
 );
 
 template <class E>

@@ -13,6 +13,10 @@ enum class item_holding_stance {
 
 	AKIMBO,
 
+	DEAD_TATTERED,
+	DEAD_TATTERED_NOARM,
+	DEAD_TATTERED_NOARMS,
+
 	COUNT
 	// END GEN INTROSPECTOR
 };

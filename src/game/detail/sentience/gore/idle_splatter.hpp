@@ -56,6 +56,11 @@ inline void handle_idle_blood_splatter(
 		return;
 	}
 
+	/* Limit blood drips for dead characters to avoid infinite splatters */
+	if (sentience.is_dead() && sentience.idle_blood_drip_count >= 3) {
+		return;
+	}
+
 	/*
 		Calculate drip interval:
 		At IDLE_SPLATTER_HP_THRESHOLD HP: IDLE_SPLATTER_MAX_INTERVAL_MS
@@ -124,4 +129,8 @@ inline void handle_idle_blood_splatter(
 		splatter_start,
 		size_mult
 	);
+
+	if (sentience.is_dead()) {
+		++sentience.idle_blood_drip_count;
+	}
 }

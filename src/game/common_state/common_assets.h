@@ -51,6 +51,8 @@ struct common_assets {
 
 	particle_effect_input blood_burst_particles;
 
+	footstep_effect_input lying_corpse_footstep;
+
 	augs::constant_size_vector<constrained_entity_flavour_id<invariants::touch_collectible>, 4> default_coin_flavours;
 	// END GEN INTROSPECTOR
 };

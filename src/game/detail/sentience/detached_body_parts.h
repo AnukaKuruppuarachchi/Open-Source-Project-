@@ -10,6 +10,9 @@ template <class T>
 struct basic_detached_body_parts {
 	// GEN INTROSPECTOR struct basic_detached_body_parts class T
 	T head;
+	T arm_upper;
+	T arm_lower;
+	T lying_corpse;
 	// END GEN INTROSPECTOR
 };
 

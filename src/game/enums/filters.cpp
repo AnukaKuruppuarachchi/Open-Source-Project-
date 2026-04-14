@@ -132,6 +132,11 @@ predefined_filters::predefined_filters() {
 		out.maskBits = standard_participation_except(C::CHARACTER, C::CHARACTER_WEAPON);
 	}
 	{
+		auto& out = filters[predefined_filter_type::DEAD_LYING_CHARACTER];
+		out.categoryBits = make_flags(C::LYING_ITEM);
+		out.maskBits = make_flags(C::QUERY, C::WALL, C::GLASS_OBSTACLE);
+	}
+	{
 
 		auto& out = filters[predefined_filter_type::CHARACTER_WEAPON];
 		out.categoryBits = make_flags(C::CHARACTER_WEAPON);
@@ -186,7 +191,7 @@ predefined_filters::predefined_filters() {
 
 		auto& out = filters[predefined_filter_type::SHELL];
 		out.categoryBits = make_flags(C::SHELL);
-		out.maskBits = standard_participation_except(C::FLYING_BULLET, C::FLYING_BULLET, C::FLYING_EXPLOSIVE, C::FLYING_MELEE, C::CHARACTER_WEAPON);
+		out.maskBits = standard_participation_except(C::FLYING_BULLET, C::FLYING_EXPLOSIVE, C::FLYING_MELEE, C::CHARACTER_WEAPON);
 	}
 	{
 

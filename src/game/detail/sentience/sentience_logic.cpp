@@ -9,12 +9,144 @@
 #include "game/detail/sentience/gore/blood_splatter.hpp"
 
 #include "augs/log.h"
+
+static constexpr real32 arm_detach_damage_offset = 30.f;
+
+static void try_detach_arms(
+	const allocate_new_entity_access access,
+	const logic_step step,
+	const entity_handle subject,
+	components::sentience& sentience,
+	const invariants::sentience& sentience_def,
+	const vec2 point_of_impact
+) {
+	if (!sentience.is_dead()) {
+		return;
+	}
+
+	/* Cap: max 2 arms total */
+	if (sentience.arms_queued_for_detach >= 2) {
+		return;
+	}
+
+	const auto& health = sentience.get<health_meter_instance>();
+	const auto current_health = health.value;
+
+	const bool was_headshot_kill = sentience.knockout_origin.circumstances.headshot;
+	const auto base = was_headshot_kill ? sentience.health_value_at_death : 0.f;
+
+	const auto threshold_1 = base - arm_detach_damage_offset;
+	const auto threshold_2 = base - arm_detach_damage_offset * 2.f;
+
+	const int arms_should_be_detached = 
+		current_health <= threshold_2 ? 2 :
+		current_health <= threshold_1 ? 1 : 0;
+
+	if (arms_should_be_detached <= sentience.arms_queued_for_detach) {
+		return;
+	}
+
+	auto& cosm = step.get_cosmos();
+	const auto arm_flavour = sentience_def.detached_flavours.arm_upper;
+
+	if (!arm_flavour.is_set()) {
+		return;
+	}
+
+	const auto subject_transform = subject.get_logic_transform();
+	const auto facing = vec2::from_degrees(subject_transform.rotation);
+	const auto perp_up = facing.perpendicular_cw();
+
+	auto determine_arm_is_upper = [&]() -> bool {
+		if (point_of_impact.is_nonzero()) {
+			const auto body_center = subject_transform.pos;
+			const auto to_impact = point_of_impact - body_center;
+			const auto dot = to_impact.dot(perp_up);
+			return dot < 0;
+		}
+		return true;
+	};
+
+	/* Only detach one arm per call (fix for one-shot peeling off two arms) */
+	const int currently_queued = sentience.arms_queued_for_detach;
+	const bool is_first_arm = (currently_queued == 0);
+	const bool is_upper = is_first_arm ? determine_arm_is_upper() : true;
+	const auto fly_direction = is_upper ? perp_up : -perp_up;
+
+	const auto arm_velocity = fly_direction * sentience_def.base_detached_head_speed;
+	const auto arm_transform = subject_transform;
+	const auto typed_subject_id = subject.get_id();
+	const auto head_effect = sentience_def.detached_head_particles;
+	const bool should_flip = !is_upper;
+
+	/* Increment immediately to prevent duplicate spawns before post_construction fires */
+	sentience.arms_queued_for_detach++;
+
+	cosmic::queue_create_entity(
+		step,
+		arm_flavour,
+		[arm_transform, arm_velocity, typed_subject_id, should_flip](const auto& typed_entity, auto& agg) {
+			typed_entity.set_logic_transform(arm_transform);
+
+			const auto& rigid_body = typed_entity.template get<components::rigid_body>();
+			rigid_body.set_velocity(arm_velocity);
+			rigid_body.set_angular_velocity(7200.f);
+			rigid_body.get_special().during_cooldown_ignore_collision_with = typed_subject_id;
+
+			if (should_flip) {
+				if (auto* geo = agg.template find<components::overridden_geo>()) {
+					geo->flip.vertically = true;
+				}
+			}
+		},
+
+		[head_effect, typed_subject_id, is_upper](const auto& typed_entity, const logic_step step) {
+			if (const auto typed_subject = step.get_cosmos()[typed_subject_id]) {
+				auto& s = typed_subject.template get<components::sentience>();
+
+				if (is_upper) {
+					s.detached.arm_upper = typed_entity;
+				}
+				else {
+					s.detached.arm_lower = typed_entity;
+				}
+
+				s.when_arms_detached = step.get_cosmos().get_timestamp();
+				s.pending_arm_splatters += 3;
+			}
+
+			const auto predictability = 
+				step.get_settings().effect_prediction.predict_death_particles 
+				? always_predictable_v
+				: never_predictable_v
+			;
+
+			head_effect.start(
+				step,
+				particle_effect_start_input::orbit_local(typed_entity, { vec2::zero, 180 } ),
+				predictability
+			);
+		}
+	);
+
+	{
+		auto rng = cosm.get_rng_for(subject);
+		::spawn_blood_splatter(access, rng, step, subject, subject_transform.pos + fly_direction * 20.f, subject_transform.pos, 1.0f);
+	}
+}
+
 void handle_corpse_damage(
 	const logic_step step,
 	const entity_handle subject,
 	components::sentience& sentience,
-	const invariants::sentience& sentience_def
+	const invariants::sentience& sentience_def,
+	const vec2 impact_direction,
+	const vec2 point_of_impact
 ) {
+	if (impact_direction.is_nonzero()) {
+		sentience.last_corpse_damage_direction = -impact_direction;
+	}
+
 	auto& health = sentience.get<health_meter_instance>();
 	auto& when_ignited = sentience.when_corpse_catched_fire;
 
@@ -53,6 +185,8 @@ void handle_corpse_damage(
 			ignite_corpse();
 		}
 	}
+
+	try_detach_arms(allocate_new_entity_access(), step, subject, sentience, sentience_def, point_of_impact);
 }
 
 void handle_corpse_detonation(
@@ -83,11 +217,104 @@ void handle_corpse_detonation(
 
 		/* Spawn blood splatters in all directions based on accumulated corpse damage */
 		const auto subject_pos = subject.get_logic_transform().pos;
+		const auto subject_transform = subject.get_logic_transform();
 		::spawn_blood_splatters_omnidirectional(access, step, subject, subject_pos, accumulated_corpse_damage);
+
+		/*
+			Determine lying corpse rotation from last received damage direction.
+			The corpse lies along the damage direction (legs point towards damage source).
+		*/
+		const auto lying_rotation = [&]() {
+			if (sentience.last_corpse_damage_direction.is_nonzero()) {
+				return sentience.last_corpse_damage_direction.degrees();
+			}
+			return subject_transform.rotation;
+		}();
+
+		const auto lying_transform = transformr(subject_pos, lying_rotation);
+		const auto lying_facing = vec2::from_degrees(lying_rotation);
+		const auto lying_perp = lying_facing.perpendicular_cw();
+
+		/* Spawn blood splatters at positions of broken body parts on the lying corpse */
+		{
+			auto rng = cosm.get_rng_for(subject);
+
+			auto spawn_splatters_at_offset = [&](const vec2 offset, const int count) {
+				const auto world_offset = lying_facing * offset.x + lying_perp * offset.y;
+				const auto world_pos = subject_pos + world_offset;
+
+				for (int i = 0; i < count; ++i) {
+					const auto random_offset = vec2::from_degrees(rng.randval(0.f, 360.f)) * rng.randval(3.f, 15.f);
+					::spawn_blood_splatter(access, rng, step, subject, world_pos + random_offset, world_pos, rng.randval(0.3f, 0.6f));
+				}
+			};
+
+			const bool head_detached = sentience.detached.head.is_set() || sentience.knockout_origin.circumstances.headshot;
+			const int num_arms = sentience.num_arms_detached();
+			const bool flip_tattered = sentience.should_flip_tattered_sprite();
+
+			if (head_detached) {
+				spawn_splatters_at_offset(vec2(sentience_def.corpse_head_offset), 2);
+			}
+
+			if (num_arms >= 1) {
+				auto upper_off = vec2(sentience_def.corpse_arm_upper_offset);
+				if (flip_tattered) {
+					upper_off.y = -upper_off.y;
+				}
+				spawn_splatters_at_offset(upper_off, 2);
+			}
+
+			if (num_arms >= 2) {
+				spawn_splatters_at_offset(vec2(sentience_def.corpse_arm_lower_offset), 2);
+			}
+		}
+
+		/* Choose the lying corpse flavour based on how many arms are detached */
+		const auto num_arms = sentience.num_arms_detached();
+		const auto corpse_flavour = [&]() {
+			if (num_arms >= 2) {
+				return sentience_def.lying_corpse_noarms_flavour;
+			}
+			if (num_arms >= 1) {
+				return sentience_def.lying_corpse_noarm_flavour;
+			}
+			return sentience_def.lying_corpse_flavour;
+		}();
+
+		if (corpse_flavour.is_set()) {
+			const auto typed_subject_id = subject.get_id();
+			const bool should_flip = sentience.should_flip_tattered_sprite();
+
+			cosmic::queue_create_entity(
+				step,
+				corpse_flavour,
+				[lying_transform, should_flip](const auto& typed_entity, auto& agg) {
+					typed_entity.set_logic_transform(lying_transform);
+
+					const auto& rigid_body = typed_entity.template get<components::rigid_body>();
+					rigid_body.set_velocity(vec2::zero);
+					rigid_body.set_angular_velocity(0.f);
+
+					if (should_flip) {
+						if (auto* geo = agg.template find<components::overridden_geo>()) {
+							geo->flip.vertically = true;
+						}
+					}
+				},
+
+				[typed_subject_id](const auto& typed_entity, const logic_step step) {
+					if (const auto typed_subject = step.get_cosmos()[typed_subject_id]) {
+						auto& s = typed_subject.template get<components::sentience>();
+						s.detached.lying_corpse = typed_entity;
+					}
+				}
+			);
+		}
 
 		sentience.has_exploded = true;
 
-		/* This will cause the corpse to disappear */
+		/* Make the tattered corpse invisible by reinferring colliders (becomes sensor) */
 		subject.infer_colliders_from_scratch();
 	};
 
@@ -109,7 +336,8 @@ void perform_knockout(
 	const entity_id& subject_id, 
 	const logic_step step, 
 	const vec2 direction,
-	const damage_origin& origin
+	const damage_origin& origin,
+	const vec2 point_of_impact
 ) {
 	auto& cosm = step.get_cosmos(); 
 
@@ -161,6 +389,10 @@ void perform_knockout(
 		sentience.when_knocked_out = cosm.get_timestamp();
 		sentience.knockout_origin = origin;
 
+		if (sentience.is_dead()) {
+			sentience.health_value_at_death = sentience.template get<health_meter_instance>().value;
+		}
+
 		if (sentience.is_dead() && origin.circumstances.headshot) {
 			const auto head_transform = typed_subject.get_logic_transform();
 			const auto head_velocity = direction * sentience_def.base_detached_head_speed;
@@ -183,7 +415,9 @@ void perform_knockout(
 
 					[head_effect, typed_subject_id](const auto& typed_entity, const logic_step step) {
 						if (const auto typed_subject = step.get_cosmos()[typed_subject_id]) {
-							typed_subject.template get<components::sentience>().detached.head = typed_entity;
+							auto& s = typed_subject.template get<components::sentience>();
+							s.detached.head = typed_entity;
+							s.pending_head_splatters = 3;
 						}
 
 						const auto predictability = 
@@ -208,6 +442,16 @@ void perform_knockout(
 			};
 
 			spawn_detached_body_part(sentience_def.detached_flavours.head);
+
+			{
+				auto access = allocate_new_entity_access();
+				auto rng = cosm.get_rng_for(subject);
+				::spawn_blood_splatter(access, rng, step, subject, head_transform.pos + direction * 20.f, head_transform.pos, 1.0f);
+			}
+		}
+
+		if (sentience.is_dead()) {
+			try_detach_arms(allocate_new_entity_access(), step, typed_subject, sentience, sentience_def, point_of_impact);
 		}
 	});
 }

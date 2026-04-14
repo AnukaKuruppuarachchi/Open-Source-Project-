@@ -167,6 +167,14 @@ void sentience_system::regenerate_values_and_advance_spell_logic(const logic_ste
 			const auto& sentience_def = subject.template get<invariants::sentience>();
 			components::sentience& sentience = subject.template get<components::sentience>();
 
+			::handle_corpse_detonation(
+				allocate_new_entity_access(),
+				step,
+				subject,
+				sentience,
+				sentience_def
+			);
+
 			if (sentience.has_exploded && sentience.coins_on_body > 0) {
 				::spawn_coins_queued(
 					sentience.coins_on_body,
@@ -178,13 +186,52 @@ void sentience_system::regenerate_values_and_advance_spell_logic(const logic_ste
 				sentience.coins_on_body = 0;
 			}
 
-			::handle_corpse_detonation(
-				allocate_new_entity_access(),
-				step,
-				subject,
-				sentience,
-				sentience_def
-			);
+			if (sentience.pending_arm_splatters > 0 && sentience.when_arms_detached.was_set()) {
+				const auto passed_secs = cosm.get_clock().get_passed_secs(sentience.when_arms_detached);
+
+				if (passed_secs >= 1.0f) {
+					auto access = allocate_new_entity_access();
+
+					auto spawn_splatters_at = [&](const entity_id arm_id) {
+						if (const auto arm = cosm[arm_id]) {
+							const auto arm_pos = arm.get_logic_transform().pos;
+							auto rng = cosm.get_rng_for(arm_id);
+
+							for (int i = 0; i < 3; ++i) {
+								const auto offset = vec2::from_degrees(rng.randval(0.f, 360.f)) * rng.randval(5.f, 25.f);
+								::spawn_blood_splatter(access, rng, step, subject, arm_pos + offset, arm_pos, rng.randval(0.5f, 1.0f));
+							}
+						}
+					};
+
+					spawn_splatters_at(sentience.detached.arm_upper);
+					spawn_splatters_at(sentience.detached.arm_lower);
+
+					sentience.pending_arm_splatters = 0;
+				}
+			}
+
+			if (sentience.pending_head_splatters > 0 && sentience.when_knocked_out.was_set()) {
+				const auto passed_secs = cosm.get_clock().get_passed_secs(sentience.when_knocked_out);
+
+				if (passed_secs >= 1.0f) {
+					auto access = allocate_new_entity_access();
+
+					if (sentience.detached.head.is_set()) {
+						if (const auto head = cosm[sentience.detached.head]) {
+							const auto head_pos = head.get_logic_transform().pos;
+							auto rng = cosm.get_rng_for(sentience.detached.head);
+
+							for (int i = 0; i < 3; ++i) {
+								const auto offset = vec2::from_degrees(rng.randval(0.f, 360.f)) * rng.randval(5.f, 25.f);
+								::spawn_blood_splatter(access, rng, step, subject, head_pos + offset, head_pos, rng.randval(0.3f, 0.7f));
+							}
+						}
+					}
+
+					sentience.pending_head_splatters = 0;
+				}
+			}
 
 			auto& health = sentience.get<health_meter_instance>();
 			auto& consciousness = sentience.get<consciousness_meter_instance>();
@@ -317,7 +364,7 @@ static void handle_special_result(const logic_step step, const messages::health_
 	const auto& origin = h.origin;
 
 	auto knockout = [&]() {
-		perform_knockout(subject, step, impact_dir, origin);
+		perform_knockout(subject, step, impact_dir, origin, h.point_of_impact);
 		/* So that dead bodies don't collide with characters */
 		subject.infer_colliders_from_scratch();
 	};
@@ -448,7 +495,9 @@ messages::health_event sentience_system::process_health_event(messages::health_e
 				step,
 				subject,
 				sentience,
-				sentience_def
+				sentience_def,
+				h.impact_velocity.is_nonzero() ? h.impact_velocity.normalize() : vec2::zero,
+				h.point_of_impact
 			);
 
 			break;

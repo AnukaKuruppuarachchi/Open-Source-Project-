@@ -28,6 +28,7 @@
 #include "game/detail/sentience/sentience_getters.h"
 
 #include "game/detail/physics/infer_damping.hpp"
+#include "game/enums/filters.h"
 #include "game/detail/movement/dash_logic.h"
 #include "game/detail/movement/movement_getters.h"
 #include "game/detail/sentience/tool_getters.h"
@@ -472,11 +473,19 @@ void movement_system::apply_movement_forces(const logic_step step) {
 										return true;
 									}
 								}
+
+								if (const auto fix = ground_entity.template find<invariants::fixtures>()) {
+									if (fix->filter == filters[predefined_filter_type::DEAD_LYING_CHARACTER]) {
+										chosen_effect = common_assets.lying_corpse_footstep;
+										chosen_speed_mult = 0.6f;
+										return true;
+									}
+								}
 							}
 
 							return false;
 						},
-						render_layer_filter::whitelist(render_layer::GROUND, render_layer::FOREGROUND, render_layer::FOREGROUND_GLOWS)
+						render_layer_filter::whitelist(render_layer::GROUND, render_layer::SOLID_OBSTACLES, render_layer::FOREGROUND, render_layer::FOREGROUND_GLOWS)
 					);
 
 					const auto drag_mult = 1 - chosen_speed_mult;

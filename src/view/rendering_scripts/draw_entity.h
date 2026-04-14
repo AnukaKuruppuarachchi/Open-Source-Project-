@@ -358,7 +358,16 @@ FORCE_INLINE void specific_entity_drawer(
 
 			const auto wielded_items = typed_handle.get_wielded_items();
 			const bool consider_weapon_reloading = true;
-			const auto stance_id = ::calc_stance_id(typed_handle, wielded_items, consider_weapon_reloading);
+			auto stance_id = ::calc_stance_id(typed_handle, wielded_items, consider_weapon_reloading);
+
+			if (sentience.is_dead()) {
+				const auto n = sentience.num_arms_detached();
+
+				stance_id = n >= 2 ? item_holding_stance::DEAD_TATTERED_NOARMS
+					: n == 1 ? item_holding_stance::DEAD_TATTERED_NOARM
+					: item_holding_stance::DEAD_TATTERED;
+			}
+
 			const auto& stance = torso.stances[stance_id];
 
 			auto four_ways = movement.four_ways_animation;
@@ -385,7 +394,10 @@ FORCE_INLINE void specific_entity_drawer(
 					return result;
 				}();
 
-				{
+				const bool is_dead = sentience.is_dead();
+				const bool is_lying_corpse = is_dead && sentience.has_exploded;
+
+				if (!is_lying_corpse) {
 					const auto leg_anim = torso.calc_leg_anim(velocity, face_degrees + stance_offsets.strafe_facing_offset);
 
 					if (const auto animation = logicals.find(leg_anim.id);
@@ -408,151 +420,229 @@ FORCE_INLINE void specific_entity_drawer(
 					}
 				}
 
-				/* Draw items under the sentience first. */
+				bool draw_standing_head = false;
+				bool head_flip = false;
 
-				const auto reloading_movement = ::calc_reloading_movement(typed_handle.get_cosmos(), wielded_items);
-				const bool currently_reloading = reloading_movement.has_value();
+				if (!is_dead) {
+					/* Draw items under the sentience first. */
 
-				auto should_draw_over_torso = [&](const auto attachment_entity) {
-					const auto slot = attachment_entity.get_current_slot();
+					const auto reloading_movement = ::calc_reloading_movement(typed_handle.get_cosmos(), wielded_items);
+					const bool currently_reloading = reloading_movement.has_value();
 
-					if (slot.get_type() == slot_function::BELT) {
-						return false;
-					}
+					auto should_draw_over_torso = [&](const auto attachment_entity) {
+						const auto slot = attachment_entity.get_current_slot();
 
-					if (slot.is_hand_slot()) {
-						const auto& item_def = attachment_entity.template get<invariants::item>();
-
-						if (currently_reloading) {
-							return item_def.draw_over_hands_when_reloading;
-						}
-
-						if (stance_offsets.is_akimbo && item_def.draw_under_hands_in_akimbo) {
+						if (slot.get_type() == slot_function::BELT) {
 							return false;
 						}
 
-						return item_def.draw_over_hands;
-					}
-
-					return true;
-				};
-
-				auto get_offsets_by_torso = [stance_offsets]() {
-					return stance_offsets;
-				};
-
-				const bool draw_mag_over = 
-					currently_reloading
-					? cosm[reloading_movement->weapon].template get<invariants::item>().draw_mag_over_when_reloading
-					: false
-				;
-
-				auto draw_items_recursively = [&](const bool over_torso = false) {
-					auto draw_attachment = [&](
-						const auto attachment_entity,
-						const auto attachment_offset
-					) {
-						attachment_entity.template dispatch_on_having_all<invariants::item>(
-							[&](const auto typed_attachment_handle) {
-								detail_specific_entity_drawer(
-									typed_attachment_handle,
-									in,
-									render_visitor,
-									viewing_transform * attachment_offset.offset,
-									attachment_offset.flip_geometry,
-									spawn_prot_mult
-								);
-							}
-						);
-					};
-
-					auto should_recurse = [over_torso, &should_draw_over_torso](const auto& slot) {
 						if (slot.is_hand_slot()) {
-							if (const auto held_item = slot.get_item_if_any()) {
-								return over_torso == should_draw_over_torso(held_item);
+							const auto& item_def = attachment_entity.template get<invariants::item>();
+
+							if (currently_reloading) {
+								return item_def.draw_over_hands_when_reloading;
 							}
+
+							if (stance_offsets.is_akimbo && item_def.draw_under_hands_in_akimbo) {
+								return false;
+							}
+
+							return item_def.draw_over_hands;
 						}
 
 						return true;
 					};
 
-					typed_handle.recurse_character_attachments(
-						draw_attachment,
-						should_recurse,
-						get_offsets_by_torso,
-						attachment_offset_settings::for_rendering(),
-						!draw_mag_over
-					);
-				};
+					auto get_offsets_by_torso = [stance_offsets]() {
+						return stance_offsets;
+					};
 
-				draw_items_recursively();
+					const bool draw_mag_over = 
+						currently_reloading
+						? cosm[reloading_movement->weapon].template get<invariants::item>().draw_mag_over_when_reloading
+						: false
+					;
 
-				const bool only_secondary = typed_handle.only_secondary_holds_item();
+					auto draw_items_recursively = [&](const bool over_torso = false) {
+						auto draw_attachment = [&](
+							const auto attachment_entity,
+							const auto attachment_offset
+						) {
+							attachment_entity.template dispatch_on_having_all<invariants::item>(
+								[&](const auto typed_attachment_handle) {
+									detail_specific_entity_drawer(
+										typed_attachment_handle,
+										in,
+										render_visitor,
+										viewing_transform * attachment_offset.offset,
+										attachment_offset.flip_geometry,
+										spawn_prot_mult
+									);
+								}
+							);
+						};
 
-				{
-					/* Draw the actual torso */
+						auto should_recurse = [over_torso, &should_draw_over_torso](const auto& slot) {
+							if (slot.is_hand_slot()) {
+								if (const auto held_item = slot.get_item_if_any()) {
+									return over_torso == should_draw_over_torso(held_item);
+								}
+							}
+
+							return true;
+						};
+
+						typed_handle.recurse_character_attachments(
+							draw_attachment,
+							should_recurse,
+							get_offsets_by_torso,
+							attachment_offset_settings::for_rendering(),
+							!draw_mag_over
+						);
+					};
+
+					draw_items_recursively();
+
+					const bool only_secondary = typed_handle.only_secondary_holds_item();
+
+					{
+						/* Draw the actual torso */
+						auto usage = stance_usage;
+
+						if (only_secondary) {
+							auto& f = usage.movement_flip.vertically;
+							f = !f;
+						}
+
+						draw_torso_frame(usage.get_with_flip(), { viewing_transform.pos, face_degrees });
+					}
+
+					draw_items_recursively(true);
+
+					draw_standing_head = true;
+					head_flip = only_secondary;
+				}
+				else if (is_lying_corpse) {
+					/*
+						The lying corpse is now a separate plain_sprited_body entity.
+						Draw corpse head or head splatter overlay at the lying corpse's real transform.
+					*/
+					const auto& cosm = typed_handle.get_cosmos();
+					const auto lying_corpse_id = sentience.detached.lying_corpse;
+
+					if (const auto lying_corpse = cosm[lying_corpse_id]) {
+						const auto& sentience_def = typed_handle.template get<invariants::sentience>();
+						const auto head_offset = vec2(sentience_def.corpse_head_offset);
+
+						const auto lying_viewing = lying_corpse.get_viewing_transform(in.interp);
+
+						const bool head_detached = sentience.detached.head.is_set();
+						const bool was_headshot = sentience.knockout_origin.circumstances.headshot;
+						const bool draw_head = !head_detached && !was_headshot;
+
+						if (draw_head) {
+							if (sentience_def.corpse_head_image.is_set()) {
+								invariants::sprite sprite;
+								sprite.set(sentience_def.corpse_head_image, in.manager);
+
+								const auto head_size = sprite.get_size();
+								/* Align right edge of head sprite to the head slot position */
+								const auto align_offset = vec2(-static_cast<float>(head_size.x) / 2.f, 0.f);
+
+								auto input = in.make_input_for<invariants::sprite>();
+								input.renderable_transform = lying_viewing * transformr(head_offset + align_offset, 0.f);
+								input.colorize.mult_alpha(teleport_alpha);
+								render_visitor(sprite, in.manager, input);
+							}
+						}
+						else {
+							if (sentience_def.corpse_head_splatter_image.is_set()) {
+								invariants::sprite sprite;
+								sprite.set(sentience_def.corpse_head_splatter_image, in.manager);
+
+								const auto splatter_size = sprite.get_size();
+								/* Align left edge of splatter sprite to the head slot position */
+								const auto align_offset = vec2(static_cast<float>(splatter_size.x) / 2.f, 0.f);
+
+								auto input = in.make_input_for<invariants::sprite>();
+								input.renderable_transform = lying_viewing * transformr(head_offset + align_offset, 0.f);
+								input.colorize.mult_alpha(teleport_alpha);
+								render_visitor(sprite, in.manager, input);
+							}
+						}
+					}
+				}
+				else {
+					/* Tattered standing corpse - draw tattered torso sprite */
 					auto usage = stance_usage;
 
-					if (only_secondary) {
+					if (sentience.should_flip_tattered_sprite()) {
 						auto& f = usage.movement_flip.vertically;
 						f = !f;
 					}
 
 					draw_torso_frame(usage.get_with_flip(), { viewing_transform.pos, face_degrees });
+
+					draw_standing_head = true;
+					head_flip = sentience.should_flip_tattered_sprite();
 				}
 
-				draw_items_recursively(true);
+				/*
+					Unified head drawing for alive and tattered standing corpses.
+					Dead chars have no wielded items/shooting/shake, so those checks are natural no-ops.
+				*/
+				if (draw_standing_head) {
+					const auto head_drawing = calc_head_drawing_type(sentience);
 
-				const auto head_drawing = calc_head_drawing_type(sentience);
+					if (head_drawing != head_drawing_type::NONE) {
+						if constexpr(typed_handle.template has<components::head>()) {
+							const auto& head = typed_handle.template get<components::head>();
+							const auto& head_def = typed_handle.template get<invariants::head>();
 
-				if (head_drawing != head_drawing_type::NONE) {
-					if constexpr(typed_handle.template has<components::head>()) {
-						const auto& head = typed_handle.template get<components::head>();
-						const auto& head_def = typed_handle.template get<invariants::head>();
+							const auto target_image = 
+								stance_usage.flags.test(stance_flag::SHOOTING)
+								? head_def.shooting_head_image 
+								: head_def.head_image
+							;
 
-						const auto target_image = 
-							stance_usage.flags.test(stance_flag::SHOOTING)
-							? head_def.shooting_head_image 
-							: head_def.head_image
-						;
+							const auto& head_offsets = logicals.get_offsets(target_image);
 
-						const auto& head_offsets = logicals.get_offsets(target_image);
+							auto stance_offsets_for_head = stance_offsets;
+							auto anchor_for_head = head_offsets.item.head_anchor;
 
-						auto stance_offsets_for_head = stance_offsets;
-						auto anchor_for_head = head_offsets.item.head_anchor;
+							if (wielded_items.size() == 1) {
+								if (const auto w = cosm[wielded_items[0]]) {
+									anchor_for_head += logicals.get_offsets(w.get_image_id()).item.head_anchor;
+								} 
+							}
 
-						if (wielded_items.size() == 1) {
-							if (const auto w = cosm[wielded_items[0]]) {
-								anchor_for_head += logicals.get_offsets(w.get_image_id()).item.head_anchor;
-							} 
-						}
+							if (head_flip) {
+								stance_offsets_for_head.flip_vertically();
+								anchor_for_head.flip_vertically();
+							}
 
-						if (only_secondary) {
-							stance_offsets_for_head.flip_vertically();
-							anchor_for_head.flip_vertically();
-						}
+							const auto target_offset = ::get_anchored_offset(stance_offsets_for_head.head, anchor_for_head);
+							const auto target_transform = viewing_transform * target_offset;
 
-						const auto target_offset = ::get_anchored_offset(stance_offsets_for_head.head, anchor_for_head);
-						const auto target_transform = viewing_transform * target_offset;
+							invariants::sprite sprite;
+							sprite.set(target_image, in.manager);
 
-						invariants::sprite sprite;
-						sprite.set(target_image, in.manager);
+							auto input = in.make_input_for<invariants::sprite>();
+							input.renderable_transform = target_transform;
+							input.renderable_transform.rotation += head.shake_rotation_amount;
 
-						auto input = in.make_input_for<invariants::sprite>();
-						input.renderable_transform = target_transform;
-						input.renderable_transform.rotation += head.shake_rotation_amount;
+							const auto head_dim = head_drawing == head_drawing_type::DIM;
+							const bool should_draw_dim_but_this_is_neon = head_dim && is_neon;
 
-						const auto head_dim = head_drawing == head_drawing_type::DIM;
-						const bool should_draw_dim_but_this_is_neon = head_dim && is_neon;
+							if (head_dim) {
+								input.colorize.multiply_rgb(0.75f);
+							}
 
-						if (head_dim) {
-							input.colorize.multiply_rgb(0.75f);
-						}
+							input.colorize.mult_alpha(teleport_alpha);
 
-						input.colorize.mult_alpha(teleport_alpha);
-
-						if (!should_draw_dim_but_this_is_neon) {
-							render_visitor(sprite, in.manager, input);
+							if (!should_draw_dim_but_this_is_neon) {
+								render_visitor(sprite, in.manager, input);
+							}
 						}
 					}
 				}

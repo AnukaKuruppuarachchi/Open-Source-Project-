@@ -8,11 +8,24 @@
 #include "game/stateless_systems/sentience_system.h"
 #include "game/stateless_systems/destruction_system.h"
 
+#include "augs/math/vec2.h"
+#include "game/cosmos/entity_id.h"
+#include "game/cosmos/entity_handle_declaration.h"
+#include "game/detail/damage_origin.h"
+
 struct creation_system;
 class gun_system;
 class sentience_system;
 class movement_system;
 struct build_arena_input;
+
+namespace components {
+	struct sentience;
+}
+
+namespace invariants {
+	struct sentience;
+}
 
 namespace test_scenes {
 	class testbed;
@@ -106,6 +119,39 @@ class allocate_new_entity_access {
 	*/
 
 	friend messages::health_event sentience_system::process_health_event(messages::health_event h, const logic_step step) const;
+
+	/*
+		Will spawn blood splatters and detached body parts on knockout/corpse damage.
+	*/
+
+	friend void perform_knockout(
+		const entity_id& subject_id,
+		const logic_step step,
+		const vec2 direction,
+		const damage_origin& origin,
+		const vec2 point_of_impact
+	);
+
+	friend void handle_corpse_damage(
+		const logic_step step,
+		const entity_handle subject,
+		components::sentience& sentience,
+		const invariants::sentience& sentience_def,
+		const vec2 impact_direction,
+		const vec2 point_of_impact
+	);
+
+	/*
+		Will spawn lying corpse body part on corpse detonation.
+	*/
+
+	friend void handle_corpse_detonation(
+		allocate_new_entity_access access,
+		const logic_step step,
+		const entity_handle subject,
+		components::sentience& sentience,
+		const invariants::sentience& sentience_def
+	);
 
 	/*
 		Will spawn blood footsteps when stepping on blood decals.

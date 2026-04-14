@@ -40,6 +40,7 @@ enum class predefined_filter_type {
 	// GEN INTROSPECTOR enum class predefined_filter_type
 	WALL,
 	DEAD_CHARACTER,
+	DEAD_LYING_CHARACTER,
 	CHARACTER,
 	CHARACTER_WEAPON,
 	CAR_FLOOR,

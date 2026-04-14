@@ -404,6 +404,59 @@ namespace test_flavours {
 		}
 
 		{
+			auto& meta = flavour_with_sprite(
+				test_plain_sprited_bodies::DETACHED_RESISTANCE_ARM,
+				test_scene_image_id::RESISTANCE_GORE_ARM,
+				render_layer::SOLID_OBSTACLES
+			);
+
+			auto& f = test_flavours::add_lying_item_dynamic_body(meta);
+			f.density *= 7.0;
+			f.restitution *= 2.;
+
+			f.filter = filters[predefined_filter_type::DEAD_LYING_CHARACTER];
+		}
+
+		{
+			auto& meta = flavour_with_sprite(
+				test_plain_sprited_bodies::DETACHED_METROPOLIS_ARM,
+				test_scene_image_id::METROPOLIS_GORE_ARM,
+				render_layer::SOLID_OBSTACLES
+			);
+
+			auto& f = test_flavours::add_lying_item_dynamic_body(meta);
+			f.density *= 7.0;
+			f.restitution *= 2.;
+			f.filter = filters[predefined_filter_type::DEAD_LYING_CHARACTER];
+		}
+
+		auto make_lying_corpse_flavour = [&](
+			const test_plain_sprited_bodies id,
+			const test_scene_image_id image
+		) {
+			auto& meta = flavour_with_sprite(
+				id,
+				image,
+				render_layer::REMNANTS
+			);
+
+			auto& f = test_flavours::add_lying_item_dynamic_body(meta);
+			f.density *= 3.0;
+			f.restitution *= 0.1f;
+			f.filter = filters[predefined_filter_type::DEAD_LYING_CHARACTER];
+
+			meta.template get<invariants::rigid_body>().damping.linear = 20.f;
+			meta.template get<invariants::rigid_body>().damping.angular = 20.f;
+		};
+
+		make_lying_corpse_flavour(test_plain_sprited_bodies::LYING_CORPSE_METROPOLIS, test_scene_image_id::METROPOLIS_TORSO_CORPSE);
+		make_lying_corpse_flavour(test_plain_sprited_bodies::LYING_CORPSE_METROPOLIS_NOARM, test_scene_image_id::METROPOLIS_TORSO_CORPSE_NOARM);
+		make_lying_corpse_flavour(test_plain_sprited_bodies::LYING_CORPSE_METROPOLIS_NOARMS, test_scene_image_id::METROPOLIS_TORSO_CORPSE_NOARMS);
+		make_lying_corpse_flavour(test_plain_sprited_bodies::LYING_CORPSE_RESISTANCE, test_scene_image_id::RESISTANCE_TORSO_CORPSE);
+		make_lying_corpse_flavour(test_plain_sprited_bodies::LYING_CORPSE_RESISTANCE_NOARM, test_scene_image_id::RESISTANCE_TORSO_CORPSE_NOARM);
+		make_lying_corpse_flavour(test_plain_sprited_bodies::LYING_CORPSE_RESISTANCE_NOARMS, test_scene_image_id::RESISTANCE_TORSO_CORPSE_NOARMS);
+
+		{
 			auto& meta = get_test_flavour(flavours, test_touch_collectibles::GOLD_COIN);
 
 			test_flavours::add_sprite(meta, in.caches, test_scene_image_id::GOLD_COIN_1, white);

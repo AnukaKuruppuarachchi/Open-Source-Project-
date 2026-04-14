@@ -117,6 +117,14 @@ namespace components {
 
 		entity_id last_damaging_gun;
 		augs::stepped_timestamp when_born_of_last_spawned_bullet;
+
+		augs::stepped_timestamp when_arms_detached;
+		int pending_arm_splatters = 0;
+		int pending_head_splatters = 0;
+		real32 health_value_at_death = 0.f;
+		int arms_queued_for_detach = 0;
+		int idle_blood_drip_count = 0;
+		vec2 last_corpse_damage_direction;
 		// END GEN INTROSPECTOR
 
 		bool is_requesting_any_interaction() const {
@@ -179,6 +187,17 @@ namespace components {
 		bool is_conscious() const;
 		bool unconscious_but_alive() const;
 		bool is_dead() const;
+
+		int num_arms_detached() const {
+			int count = 0;
+			if (detached.arm_upper.is_set()) ++count;
+			if (detached.arm_lower.is_set()) ++count;
+			return count;
+		}
+
+		bool should_flip_tattered_sprite() const {
+			return detached.arm_lower.is_set() && !detached.arm_upper.is_set();
+		}
 
 		template <class T>
 		auto& get() {
@@ -285,6 +304,16 @@ namespace invariants {
 		invariants::explosive corpse_explosion;
 
 		corpse_remnant_flavour_vector corpse_remnant_defs;
+
+		assets::image_id corpse_head_image;
+		assets::image_id corpse_head_splatter_image;
+		vec2i corpse_head_offset = { -20, 0 };
+		vec2i corpse_arm_upper_offset = { 0, -15 };
+		vec2i corpse_arm_lower_offset = { 0, 15 };
+
+		body_part_flavour lying_corpse_flavour;
+		body_part_flavour lying_corpse_noarm_flavour;
+		body_part_flavour lying_corpse_noarms_flavour;
 
 		augs::constant_size_vector<constrained_entity_flavour_id<invariants::touch_collectible>, 4> coin_flavours;
 		// END GEN INTROSPECTOR

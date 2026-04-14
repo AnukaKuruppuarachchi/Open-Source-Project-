@@ -132,6 +132,10 @@ namespace test_flavours {
 				torso_def.stances[item_holding_stance::AKIMBO].chambering = torso_def.stances[item_holding_stance::AKIMBO].actions[weapon_action_type::PRIMARY].perform;
 				torso_def.stances[item_holding_stance::AKIMBO].pain = torso_def.stances[item_holding_stance::AKIMBO].actions[weapon_action_type::PRIMARY].perform;
 
+				torso_def.stances[item_holding_stance::DEAD_TATTERED].carry = to_animation_id(test_scene_torso_animation_id::METROPOLIS_TORSO_TATTERED);
+				torso_def.stances[item_holding_stance::DEAD_TATTERED_NOARM].carry = to_animation_id(test_scene_torso_animation_id::METROPOLIS_TORSO_TATTERED_NOARM);
+				torso_def.stances[item_holding_stance::DEAD_TATTERED_NOARMS].carry = to_animation_id(test_scene_torso_animation_id::METROPOLIS_TORSO_TATTERED_NOARMS);
+
 				meta.set(torso_def);
 			}
 
@@ -273,7 +277,16 @@ namespace test_flavours {
 
 			sentience.max_inertia_when_rotation_possible = 1000.f;
 			sentience.detached_flavours.head = to_entity_flavour_id(test_plain_sprited_bodies::DETACHED_METROPOLIS_HEAD);
+			sentience.detached_flavours.arm_upper = to_entity_flavour_id(test_plain_sprited_bodies::DETACHED_METROPOLIS_ARM);
+			sentience.detached_flavours.arm_lower = to_entity_flavour_id(test_plain_sprited_bodies::DETACHED_METROPOLIS_ARM);
 			sentience.base_detached_head_speed = -4000.f;
+
+			sentience.lying_corpse_flavour = to_entity_flavour_id(test_plain_sprited_bodies::LYING_CORPSE_METROPOLIS);
+			sentience.lying_corpse_noarm_flavour = to_entity_flavour_id(test_plain_sprited_bodies::LYING_CORPSE_METROPOLIS_NOARM);
+			sentience.lying_corpse_noarms_flavour = to_entity_flavour_id(test_plain_sprited_bodies::LYING_CORPSE_METROPOLIS_NOARMS);
+
+			sentience.corpse_head_image = to_image_id(test_scene_image_id::METROPOLIS_TORSO_CORPSE_HEAD);
+			sentience.corpse_head_splatter_image = to_image_id(test_scene_image_id::METROPOLIS_TORSO_CORPSE_HEAD_SPLATTER);
 
 			sentience.detached_head_particles.id = to_particle_effect_id(test_scene_particle_effect_id::DETACHED_HEAD_FIRE);
 			sentience.detached_head_particles.modifier.color = rgba(192, 0, 0, 255);
@@ -453,8 +466,17 @@ namespace test_flavours {
 			meta.get<invariants::text_details>().name = format_enum(test_controlled_characters::RESISTANCE_SOLDIER);
 
 			meta.get<invariants::sentience>().detached_flavours.head = to_entity_flavour_id(test_plain_sprited_bodies::DETACHED_RESISTANCE_HEAD);
+			meta.get<invariants::sentience>().detached_flavours.arm_upper = to_entity_flavour_id(test_plain_sprited_bodies::DETACHED_RESISTANCE_ARM);
+			meta.get<invariants::sentience>().detached_flavours.arm_lower = to_entity_flavour_id(test_plain_sprited_bodies::DETACHED_RESISTANCE_ARM);
 			meta.get<invariants::sentience>().detached_head_particles.modifier.color = rgba(192, 0, 0, 255);
 			meta.get<invariants::sentience>().corpse_catch_fire_particles.modifier.color = rgba(192, 0, 0, 255);
+
+			meta.get<invariants::sentience>().lying_corpse_flavour = to_entity_flavour_id(test_plain_sprited_bodies::LYING_CORPSE_RESISTANCE);
+			meta.get<invariants::sentience>().lying_corpse_noarm_flavour = to_entity_flavour_id(test_plain_sprited_bodies::LYING_CORPSE_RESISTANCE_NOARM);
+			meta.get<invariants::sentience>().lying_corpse_noarms_flavour = to_entity_flavour_id(test_plain_sprited_bodies::LYING_CORPSE_RESISTANCE_NOARMS);
+
+			meta.get<invariants::sentience>().corpse_head_image = to_image_id(test_scene_image_id::RESISTANCE_TORSO_CORPSE_HEAD);
+			meta.get<invariants::sentience>().corpse_head_splatter_image = to_image_id(test_scene_image_id::RESISTANCE_TORSO_CORPSE_HEAD_SPLATTER);
 
 
 			{
@@ -558,6 +580,10 @@ namespace test_flavours {
 				act(item_holding_stance::AKIMBO, weapon_action_type::PRIMARY, test_scene_torso_animation_id::RESISTANCE_TORSO_AKIMBO_SHOT);
 				torso_def.stances[item_holding_stance::AKIMBO].chambering = torso_def.stances[item_holding_stance::AKIMBO].actions[weapon_action_type::PRIMARY].perform;
 				torso_def.stances[item_holding_stance::AKIMBO].pain = torso_def.stances[item_holding_stance::AKIMBO].actions[weapon_action_type::PRIMARY].perform;
+
+				torso_def.stances[item_holding_stance::DEAD_TATTERED].carry = to_animation_id(test_scene_torso_animation_id::RESISTANCE_TORSO_TATTERED);
+				torso_def.stances[item_holding_stance::DEAD_TATTERED_NOARM].carry = to_animation_id(test_scene_torso_animation_id::RESISTANCE_TORSO_TATTERED_NOARM);
+				torso_def.stances[item_holding_stance::DEAD_TATTERED_NOARMS].carry = to_animation_id(test_scene_torso_animation_id::RESISTANCE_TORSO_TATTERED_NOARMS);
 
 				meta.set(torso_def);
 			}
