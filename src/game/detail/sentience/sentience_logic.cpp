@@ -7,6 +7,7 @@
 #include "game/cosmos/data_living_one_step.h"
 #include "game/detail/explosive/detonate.h"
 #include "game/detail/sentience/gore/blood_splatter.hpp"
+#include "game/detail/sentience/gore/idle_splatter.hpp"
 #include "game/messages/pure_color_highlight_message.h"
 
 #include "augs/log.h"
@@ -393,7 +394,7 @@ void handle_corpse_detonation(
 			spawn_lying_corpse(false);
 		}
 	}
-	else if (sentience.is_dead() && sentience.idle_blood_drip_count >= 3) {
+	else if (sentience.is_dead() && sentience.idle_blood_drip_count >= IDLE_SPLATTER_MAX_CORPSE_DRIPS) {
 		/*
 			The tattered corpse has bled out.
 			Gently fall to the ground without any explosion effects.

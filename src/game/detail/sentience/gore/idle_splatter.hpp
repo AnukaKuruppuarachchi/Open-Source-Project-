@@ -9,6 +9,9 @@
 */
 inline constexpr real32 IDLE_SPLATTER_HP_THRESHOLD = 0.2f;
 
+/* Number of blood drips before a dead tattered corpse falls to the ground */
+inline constexpr int IDLE_SPLATTER_MAX_CORPSE_DRIPS = 3;
+
 /* Drip interval in milliseconds */
 inline constexpr real32 IDLE_SPLATTER_CORPSE_INTERVAL_MS = 500.f;
 inline constexpr real32 IDLE_SPLATTER_MIN_INTERVAL_MS = 1000.f;
@@ -57,7 +60,7 @@ inline void handle_idle_blood_splatter(
 	}
 
 	/* Limit blood drips for dead characters to avoid infinite splatters */
-	if (sentience.is_dead() && sentience.idle_blood_drip_count >= 3) {
+	if (sentience.is_dead() && sentience.idle_blood_drip_count >= IDLE_SPLATTER_MAX_CORPSE_DRIPS) {
 		return;
 	}
 
