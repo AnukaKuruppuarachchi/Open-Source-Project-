@@ -13,6 +13,8 @@
 #include "game/cosmos/create_entity.hpp"
 #include "game/messages/clone_entity_message.h"
 #include "game/messages/just_create_entity_message.h"
+#include "game/cosmos/get_corresponding.h"
+#include "game/components/interpolation_component.h"
 
 void deletion_system::mark_queued_entities_and_their_children_for_deletion(const logic_step step) {
 	auto& cosm = step.get_cosmos();
@@ -64,6 +66,19 @@ void creation_system::flush_just_create_entity_requests(const logic_step step) {
 
 		if (new_entity.alive() && q.post_create) {
 			q.post_create(new_entity, step);
+
+			/*
+				Re-snap interpolation after post_create moves the entity,
+				so it doesn't appear at (0,0) and interpolate towards the real position.
+			*/
+			new_entity.dispatch([](const auto& typed_handle) {
+				if constexpr(remove_cref<decltype(typed_handle)>::template has<invariants::interpolation>()) {
+					auto& interp = get_corresponding<components::interpolation>(typed_handle);
+					if (const auto t = typed_handle.find_logic_transform()) {
+						interp.snap_to(*t);
+					}
+				}
+			});
 		}
 	}
 

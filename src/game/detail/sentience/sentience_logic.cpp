@@ -503,7 +503,7 @@ void perform_knockout(
 				auto access = allocate_new_entity_access();
 				auto rng = cosm.get_rng_for(subject);
 				const auto splatter_origin = point_of_impact.is_nonzero() ? point_of_impact : head_transform.pos;
-				const auto flight_dir = head_velocity.is_nonzero() ? head_velocity.normalize() : -direction;
+				const auto flight_dir = head_velocity.is_nonzero() ? vec2(head_velocity).normalize() : -direction;
 				::spawn_blood_splatter(access, rng, step, subject, splatter_origin + flight_dir * 20.f, splatter_origin, 1.2f);
 			}
 		}
