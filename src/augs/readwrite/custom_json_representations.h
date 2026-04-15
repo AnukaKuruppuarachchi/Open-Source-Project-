@@ -2,6 +2,7 @@
 #include <string>
 #include "augs/math/vec2.h"
 #include "augs/graphics/rgba.h"
+#include "augs/graphics/neon_light_color.h"
 #include "rapidjson/prettywriter.h"
 
 #if JSON_TRAITS_INCLUDED
@@ -53,6 +54,35 @@ namespace augs {
 		if (from.IsArray()) {
 			if (from.Size() == 4 && from[0].IsUint() && from[1].IsUint() && from[2].IsUint() && from[3].IsUint()) {
 				out.set(from[0].GetUint(), from[1].GetUint(), from[2].GetUint(), from[3].GetUint());
+			}
+		}
+	}
+
+	template <class T>
+	inline void to_json_value(T& out, const neon_light_color& from) {
+		out.SetFormatOptions(rapidjson::kFormatSingleLineArray);
+		out.StartArray();
+		out.Uint(from.color.r);
+		out.Uint(from.color.g);
+		out.Uint(from.color.b);
+		out.Uint(from.color.a);
+		out.Double(from.alpha_multiplier);
+		out.EndArray();
+		out.SetFormatOptions(rapidjson::kFormatDefault);
+	}
+
+	template <class T>
+	void from_json_value(T& from, neon_light_color& out) {
+		if (from.IsArray()) {
+			if (from.Size() >= 4 && from[0].IsUint() && from[1].IsUint() && from[2].IsUint() && from[3].IsUint()) {
+				out.color.set(from[0].GetUint(), from[1].GetUint(), from[2].GetUint(), from[3].GetUint());
+
+				if (from.Size() >= 5 && from[4].IsNumber()) {
+					out.alpha_multiplier = std::max(0.0f, from[4].GetFloat());
+				}
+				else {
+					out.alpha_multiplier = 1.0f;
+				}
 			}
 		}
 	}

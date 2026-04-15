@@ -7,7 +7,7 @@
                 80
             ],
             "amplification": 160.0,
-            "alpha_multiplier": 0.4,
+            "alpha_multiplier": 1.0,
             "light_colors": [
                 [
                     255,
@@ -154,7 +154,7 @@
             },
             "head_anchor": {
                 "pos": [
-                    0,
+                    9,
                     0
                 ],
                 "rotation": 0.0

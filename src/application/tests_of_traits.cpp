@@ -375,6 +375,7 @@ struct tests_of_traits {
 	static_assert(is_introspective_leaf_v<activity_type>);
 
 	static_assert(augs::has_custom_to_json_value_v<rgba>);
+	static_assert(augs::has_custom_to_json_value_v<neon_light_color>);
 	static_assert(augs::has_custom_to_json_value_v<ImVec4>);
 	static_assert(augs::has_custom_to_json_value_v<ImVec2>);
 	static_assert(!augs::has_custom_to_json_value_v<int>);

@@ -8,6 +8,7 @@
 
 #include "augs/misc/imgui/imgui_image_color_picker.h"
 #include "augs/misc/imgui/imgui_scope_wrappers.h"
+#include "augs/graphics/neon_light_color.h"
 #include "augs/misc/imgui/imgui_drawers.h"
 
 struct image_color_picker_widget {
@@ -22,7 +23,7 @@ struct image_color_picker_widget {
 	static constexpr bool handles = is_one_of_v<T, rgba>;
 
 	template <class T>
-	static constexpr bool handles_prologue = is_one_of_v<T, std::vector<rgba>>;
+	static constexpr bool handles_prologue = is_one_of_v<T, std::vector<rgba>, std::vector<neon_light_color>>;
 
 	template <class T>
 	auto describe_changed(
@@ -45,7 +46,7 @@ struct image_color_picker_widget {
 	bool handle_prologue(const std::string& identity_label, T& object) const {
 		using namespace augs::imgui;
 
-		static_assert(handles<typename T::value_type>);
+		static_assert(handles<typename T::value_type> || std::is_constructible_v<typename T::value_type, rgba>);
 
 		update_preview();
 

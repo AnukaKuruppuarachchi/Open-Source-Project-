@@ -105,8 +105,9 @@ void generate_gauss_kernel(
 
 void scan_and_hide_undesired_pixels(
 	augs::image& original_image,
-	const std::vector<rgba>& color_whitelist,
-	std::vector<vec2u>& target_positions
+	const std::vector<neon_light_color>& color_whitelist,
+	std::vector<vec2u>& target_positions,
+	std::vector<float>& target_alpha_multipliers
 );
 
 void resize_image(
@@ -129,15 +130,18 @@ void make_neon(
 	thread_local std::vector<double> kernel_;
 	thread_local std::vector<vec2u> pixel_coordinates_;
 	thread_local std::vector<rgba> pixels_original_;
+	thread_local std::vector<float> pixel_alpha_multipliers_;
 
 	auto& kernel = kernel_;
 	auto& pixel_coordinates = pixel_coordinates_;
 	auto& pixels_original = pixels_original_; 
+	auto& pixel_alpha_multipliers = pixel_alpha_multipliers_;
 
 	pixel_coordinates.clear();
 	pixels_original.clear();
+	pixel_alpha_multipliers.clear();
 
-	scan_and_hide_undesired_pixels(source, input.light_colors, pixel_coordinates);
+	scan_and_hide_undesired_pixels(source, input.light_colors, pixel_coordinates, pixel_alpha_multipliers);
 	generate_gauss_kernel(input, kernel);
 
 	for (const auto& p : pixel_coordinates) {
@@ -152,6 +156,7 @@ void make_neon(
 	for (std::size_t i = 0; i < pixel_coordinates.size(); ++i) {
 		const auto coord = pixel_coordinates[i];
 		const auto current_light_pixel = pixels_original[i];
+		const auto per_alpha = pixel_alpha_multipliers[i];
 
 		for (unsigned y = 0; y < radius_rows; ++y) {
 			for (unsigned x = 0; x < radius_cols; ++x) {
@@ -167,7 +172,7 @@ void make_neon(
 					continue;
 				}
 
-				if (const auto alpha = std::min(255u, static_cast<unsigned>(255 * kernel[y * radius_cols + x] * input.amplification))) {
+				if (const auto alpha = std::min(255u, static_cast<unsigned>(255 * kernel[y * radius_cols + x] * input.amplification * per_alpha))) {
 					auto& drawn_pixel = source.pixel({ current_index_x, current_index_y });
 
 					if (drawn_pixel == PIXEL_NONE) {
@@ -243,18 +248,30 @@ void generate_gauss_kernel(const neon_map_input& input, std::vector<double>& res
 
 void scan_and_hide_undesired_pixels(
 	augs::image& original_image,
-	const std::vector<rgba>& color_whitelist,
-	std::vector<vec2u>& result
+	const std::vector<neon_light_color>& color_whitelist,
+	std::vector<vec2u>& result,
+	std::vector<float>& result_alpha_multipliers
 ) {
 	for (unsigned y = 0; y < original_image.get_rows(); ++y) {
 		for (unsigned x = 0; x < original_image.get_columns(); ++x) {
 			auto& drawn_pixel = original_image.pixel({ x, y });
 
-			if (!found_in(color_whitelist, drawn_pixel)) {
-				drawn_pixel = PIXEL_NONE;
+			bool matched = false;
+
+			for (const auto& entry : color_whitelist) {
+				if (entry.color == drawn_pixel) {
+					const auto per_alpha = std::max(0.0f, entry.alpha_multiplier);
+					drawn_pixel.mult_alpha(per_alpha);
+
+					result.emplace_back(x, y);
+					result_alpha_multipliers.push_back(per_alpha);
+					matched = true;
+					break;
+				}
 			}
-			else {
-				result.emplace_back(x, y);
+
+			if (!matched) {
+				drawn_pixel = PIXEL_NONE;
 			}
 		}
 	}

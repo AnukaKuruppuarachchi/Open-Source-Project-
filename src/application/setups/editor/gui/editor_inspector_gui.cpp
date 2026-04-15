@@ -1670,13 +1670,32 @@ EDIT_FUNCTION(
 
 					ImGui::SameLine();
 
-					if (edit_property(result, id_col, special_handler, col)) {
+					if (edit_property(result, id_col, special_handler, col.color)) {
 						for (auto& e : es) {
 							auto& lc = e.after.neon_map.value.light_colors;
 
 							if (idx < lc.size()) {
-								lc[idx] = col;
+								lc[idx].color = col.color;
 							}
+						}
+					}
+
+					{
+						auto id_alpha = typesafe_sprintf("Alpha##Light%x", idx);
+						auto iw = augs::imgui::scoped_item_width(80);
+
+						if (ImGui::DragFloat(id_alpha.c_str(), &col.alpha_multiplier, 0.01f, 0.0f, 10.0f)) {
+							col.alpha_multiplier = std::max(0.0f, col.alpha_multiplier);
+
+							for (auto& e : es) {
+								auto& lc = e.after.neon_map.value.light_colors;
+
+								if (idx < lc.size()) {
+									lc[idx].alpha_multiplier = col.alpha_multiplier;
+								}
+							}
+
+							result = typesafe_sprintf("Changed alpha multiplier for Light %x in %%x", idx + 1);
 						}
 					}
 				}

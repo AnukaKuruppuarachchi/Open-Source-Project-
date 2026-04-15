@@ -5,6 +5,7 @@
 #include <chrono>
 
 #include "augs/graphics/rgba.h"
+#include "augs/graphics/neon_light_color.h"
 #include "augs/filesystem/path.h"
 #include "augs/filesystem/file_time_type.h"
 
@@ -15,7 +16,7 @@ struct neon_map_input {
 	float amplification = 60.f;
 	float alpha_multiplier = 1.f;
 
-	std::vector<rgba> light_colors;
+	std::vector<neon_light_color> light_colors;
 	// END GEN INTROSPECTOR
 
 	bool operator==(const neon_map_input&) const = default;
