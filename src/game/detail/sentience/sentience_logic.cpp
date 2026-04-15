@@ -83,7 +83,12 @@ static void try_detach_arms(
 	/* Only detach one arm per call (fix for one-shot peeling off two arms) */
 	const int currently_queued = sentience.arms_queued_for_detach;
 	const bool is_first_arm = (currently_queued == 0);
-	const bool is_upper = is_first_arm ? determine_arm_is_upper() : true;
+
+	/*
+		First arm direction is determined by impact position.
+		Second arm always goes in the opposite direction of the first.
+	*/
+	const bool is_upper = is_first_arm ? determine_arm_is_upper() : !sentience.first_arm_queued_as_upper;
 	const auto fly_direction = is_upper ? perp_up : -perp_up;
 
 	const auto arm_velocity = fly_direction * sentience_def.base_detached_head_speed;
@@ -93,6 +98,9 @@ static void try_detach_arms(
 	const bool should_flip = !is_upper;
 
 	/* Increment immediately to prevent duplicate spawns before post_construction fires */
+	if (is_first_arm) {
+		sentience.first_arm_queued_as_upper = is_upper;
+	}
 	sentience.arms_queued_for_detach++;
 
 	cosmic::queue_create_entity(

@@ -123,6 +123,7 @@ namespace components {
 		int pending_head_splatters = 0;
 		real32 health_value_at_death = 0.f;
 		int arms_queued_for_detach = 0;
+		bool first_arm_queued_as_upper = false;
 		int idle_blood_drip_count = 0;
 		vec2 last_corpse_damage_direction;
 		// END GEN INTROSPECTOR
@@ -189,14 +190,15 @@ namespace components {
 		bool is_dead() const;
 
 		int num_arms_detached() const {
-			int count = 0;
-			if (detached.arm_upper.is_set()) ++count;
-			if (detached.arm_lower.is_set()) ++count;
-			return count;
+			return arms_queued_for_detach;
 		}
 
 		bool should_flip_tattered_sprite() const {
-			return detached.arm_lower.is_set() && !detached.arm_upper.is_set();
+			/*
+				Flip when exactly one arm is detached and
+				it was the lower arm (i.e. the first arm was NOT upper).
+			*/
+			return arms_queued_for_detach == 1 && !first_arm_queued_as_upper;
 		}
 
 		template <class T>

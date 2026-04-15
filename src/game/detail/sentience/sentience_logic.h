@@ -46,6 +46,7 @@ void resurrect(const logic_step step, const E& typed_handle, const float spawn_p
 	sentience.when_arms_detached = {};
 	sentience.pending_arm_splatters = 0;
 	sentience.arms_queued_for_detach = 0;
+	sentience.first_arm_queued_as_upper = false;
 	sentience.idle_blood_drip_count = 0;
 	sentience.last_corpse_damage_direction = vec2::zero;
 
