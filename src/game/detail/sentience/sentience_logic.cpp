@@ -13,7 +13,7 @@
 
 #include "augs/log.h"
 
-static constexpr real32 arm_detach_damage_offset = 30.f;
+static constexpr real32 arm_detach_damage_offset = 90.f;
 
 static void try_detach_arms(
 	const allocate_new_entity_access access,
@@ -21,7 +21,8 @@ static void try_detach_arms(
 	const entity_handle subject,
 	components::sentience& sentience,
 	const invariants::sentience& sentience_def,
-	const vec2 point_of_impact
+	const vec2 point_of_impact,
+	const real32 damage_amount
 ) {
 	if (!sentience.is_dead()) {
 		return;
@@ -92,7 +93,9 @@ static void try_detach_arms(
 	const bool is_upper = is_first_arm ? determine_arm_is_upper() : !sentience.first_arm_queued_as_upper;
 	const auto fly_direction = is_upper ? perp_up : -perp_up;
 
-	const auto arm_velocity = fly_direction * sentience_def.base_detached_head_speed;
+	/* Damage-based speed scaling: 0 damage = 0%, 100 damage = 100% of base speed */
+	const auto damage_ratio = repro::sqrt(std::min(1.0f, damage_amount / 100.0f));
+	const auto arm_velocity = fly_direction * (sentience_def.base_detached_arm_speed * damage_ratio);
 	const auto arm_transform = subject_transform;
 	const auto typed_subject_id = subject.get_id();
 	const auto head_effect = sentience_def.detached_head_particles;
@@ -118,7 +121,7 @@ static void try_detach_arms(
 
 			const auto& rigid_body = typed_entity.template get<components::rigid_body>();
 			rigid_body.set_velocity(arm_velocity);
-			rigid_body.set_angular_velocity(7200.f);
+			rigid_body.set_angular_velocity(40.f);
 			rigid_body.get_special().during_cooldown_ignore_collision_with = typed_subject_id;
 
 			if (should_flip) {
@@ -160,10 +163,26 @@ static void try_detach_arms(
 				oriented in the flight direction.
 				Use typed_entity (arm) as orbit subject to avoid orbit glitches.
 			*/
+			if (false)
 			{
 				auto& cosm = step.get_cosmos();
 				auto rng = cosm.get_rng_for(typed_entity.get_id());
 				::spawn_blood_splatter(access, rng, step, typed_entity, arm_splatter_origin + fly_direction * 20.f, arm_splatter_origin, 0.7f);
+			}
+
+			/*
+				Send a white highlight for the detached arm when it first appears.
+				Analogous to the lying corpse highlight.
+			*/
+			{
+				messages::pure_color_highlight msg;
+				msg.subject = typed_entity;
+				msg.input.starting_alpha_ratio = 1.f;
+				msg.input.maximum_duration_seconds = 0.35f;
+				msg.input.size_mult_start = 2.0f;
+				msg.input.color = white;
+
+				step.post_message(msg);
 			}
 		}
 	);
@@ -175,7 +194,8 @@ void handle_corpse_damage(
 	components::sentience& sentience,
 	const invariants::sentience& sentience_def,
 	const vec2 impact_direction,
-	const vec2 point_of_impact
+	const vec2 point_of_impact,
+	const real32 damage_amount
 ) {
 	if (impact_direction.is_nonzero()) {
 		sentience.last_corpse_damage_direction = impact_direction;
@@ -220,7 +240,7 @@ void handle_corpse_damage(
 		}
 	}
 
-	try_detach_arms(allocate_new_entity_access(), step, subject, sentience, sentience_def, point_of_impact);
+	try_detach_arms(allocate_new_entity_access(), step, subject, sentience, sentience_def, point_of_impact, damage_amount);
 }
 
 void handle_corpse_detonation(
@@ -425,7 +445,8 @@ void perform_knockout(
 	const logic_step step, 
 	const vec2 direction,
 	const damage_origin& origin,
-	const vec2 point_of_impact
+	const vec2 point_of_impact,
+	const real32 damage_amount
 ) {
 	auto& cosm = step.get_cosmos(); 
 
@@ -486,8 +507,10 @@ void perform_knockout(
 			/*
 				Head flies in the opposite direction of the damage,
 				at reduced speed for a heavier feel.
+				Damage-based speed scaling: 0 damage = 0%, 100 damage = 100% of base speed.
 			*/
-			const auto head_velocity = -direction * sentience_def.base_detached_head_speed * 0.5f;
+			const auto damage_ratio = std::min(1.0f, damage_amount / 100.0f);
+			const auto head_velocity = -direction * (sentience_def.base_detached_head_speed * 0.5f) * damage_ratio;
 			const auto typed_subject_id = typed_subject.get_id();
 			const auto head_effect = sentience_def.detached_head_particles;
 
@@ -548,6 +571,21 @@ void perform_knockout(
 							auto rng = cosm.get_rng_for(typed_entity.get_id());
 							::spawn_blood_splatter(head_access, rng, step, typed_entity, head_splatter_origin + head_flight_dir * 20.f, head_splatter_origin, 1.2f);
 						}
+
+						/*
+							Send a white highlight for the detached head when it first appears.
+							Analogous to the lying corpse highlight.
+						*/
+						{
+							messages::pure_color_highlight msg;
+							msg.subject = typed_entity;
+							msg.input.starting_alpha_ratio = 1.f;
+							msg.input.maximum_duration_seconds = 0.85f;
+							msg.input.size_mult_start = 2.5f;
+							msg.input.color = white;
+
+							step.post_message(msg);
+						}
 					}
 				);
 			};
@@ -556,7 +594,7 @@ void perform_knockout(
 		}
 
 		if (sentience.is_dead()) {
-			try_detach_arms(allocate_new_entity_access(), step, typed_subject, sentience, sentience_def, point_of_impact);
+			try_detach_arms(allocate_new_entity_access(), step, typed_subject, sentience, sentience_def, point_of_impact, damage_amount);
 		}
 	});
 }

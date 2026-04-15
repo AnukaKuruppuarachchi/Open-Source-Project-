@@ -411,7 +411,7 @@ static void handle_special_result(const logic_step step, const messages::health_
 	const auto& origin = h.origin;
 
 	auto knockout = [&]() {
-		perform_knockout(subject, step, impact_dir, origin, h.point_of_impact);
+		perform_knockout(subject, step, impact_dir, origin, h.point_of_impact, h.damage.total());
 		/* So that dead bodies don't collide with characters */
 		subject.infer_colliders_from_scratch();
 	};
@@ -544,7 +544,8 @@ messages::health_event sentience_system::process_health_event(messages::health_e
 				sentience,
 				sentience_def,
 				h.impact_velocity.is_nonzero() ? h.impact_velocity.normalize() : vec2::zero,
-				h.point_of_impact
+				h.point_of_impact,
+				h.damage.total()
 			);
 
 			break;

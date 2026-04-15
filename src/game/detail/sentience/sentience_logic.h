@@ -70,7 +70,8 @@ void handle_corpse_damage(
 	components::sentience& sentience,
 	const invariants::sentience& sentience_def,
 	const vec2 impact_direction = vec2::zero,
-	const vec2 point_of_impact = vec2::zero
+	const vec2 point_of_impact = vec2::zero,
+	const real32 damage_amount = 0.f
 );
 
 void handle_corpse_detonation(
@@ -86,7 +87,8 @@ void perform_knockout(
 	const logic_step step, 
 	const vec2 direction,
 	const damage_origin& origin,
-	const vec2 point_of_impact = vec2::zero
+	const vec2 point_of_impact = vec2::zero,
+	const real32 damage_amount = 0.f
 );
 
 template <class E>

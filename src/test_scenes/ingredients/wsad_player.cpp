@@ -279,7 +279,8 @@ namespace test_flavours {
 			sentience.detached_flavours.head = to_entity_flavour_id(test_plain_sprited_bodies::DETACHED_METROPOLIS_HEAD);
 			sentience.detached_flavours.arm_upper = to_entity_flavour_id(test_plain_sprited_bodies::DETACHED_METROPOLIS_ARM);
 			sentience.detached_flavours.arm_lower = to_entity_flavour_id(test_plain_sprited_bodies::DETACHED_METROPOLIS_ARM);
-			sentience.base_detached_head_speed = -4000.f;
+			sentience.base_detached_head_speed = -8000.f;
+			sentience.base_detached_arm_speed = -1000.f;
 
 			sentience.lying_corpse_flavour = to_entity_flavour_id(test_plain_sprited_bodies::LYING_CORPSE_METROPOLIS);
 			sentience.lying_corpse_noarm_flavour = to_entity_flavour_id(test_plain_sprited_bodies::LYING_CORPSE_METROPOLIS_NOARM);

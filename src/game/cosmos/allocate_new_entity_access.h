@@ -129,7 +129,8 @@ class allocate_new_entity_access {
 		const logic_step step,
 		const vec2 direction,
 		const damage_origin& origin,
-		const vec2 point_of_impact
+		const vec2 point_of_impact,
+		const real32 damage_amount
 	);
 
 	friend void handle_corpse_damage(
@@ -138,7 +139,8 @@ class allocate_new_entity_access {
 		components::sentience& sentience,
 		const invariants::sentience& sentience_def,
 		const vec2 impact_direction,
-		const vec2 point_of_impact
+		const vec2 point_of_impact,
+		const real32 damage_amount
 	);
 
 	/*
