@@ -217,8 +217,8 @@ void sentience_system::regenerate_values_and_advance_spell_logic(const logic_ste
 					Two rounds of splatters: first at 0.5s, second at 1.0s.
 					Arms get slightly smaller splatters than default.
 				*/
-				const auto round_index = 2 - sentience.pending_arm_splatters;
-				const auto trigger_time = 0.5f + round_index * 0.5f;
+				const auto completed_rounds = 2 - sentience.pending_arm_splatters;
+				const auto trigger_time = 0.5f + completed_rounds * 0.5f;
 
 				if (passed_secs >= trigger_time) {
 					auto access = allocate_new_entity_access();
@@ -249,8 +249,8 @@ void sentience_system::regenerate_values_and_advance_spell_logic(const logic_ste
 					Two rounds of splatters: first at 0.5s, second at 1.0s.
 					Head splatters can be a bit larger.
 				*/
-				const auto round_index = 2 - sentience.pending_head_splatters;
-				const auto trigger_time = 0.5f + round_index * 0.5f;
+				const auto completed_rounds = 2 - sentience.pending_head_splatters;
+				const auto trigger_time = 0.5f + completed_rounds * 0.5f;
 
 				if (passed_secs >= trigger_time) {
 					auto access = allocate_new_entity_access();
