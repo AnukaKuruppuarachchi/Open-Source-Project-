@@ -35,6 +35,15 @@
 
 using emi_inst = particles_simulation_system::emission_instance;
 
+template <class Container, class Element>
+void simple_push_or_recycle(Container& container, Element& element) {
+	if (container.size() == container.max_size()) {
+		return;
+	}
+
+	container.push_back(element);
+}
+
 bool emi_inst::is_over() const {
 	return stream_lifetime_ms >= stream_max_lifetime_ms;
 }
@@ -182,22 +191,14 @@ void particles_simulation_system::clear() {
 
 void particles_simulation_system::add_particle(const particle_layer l, const general_particle& p) {
 	auto& v = general_particles[l];
-
-	if (container_full(v)) {
-		return;
-	}
-
-	v.push_back(p);
+	auto p_copy = p;
+	::simple_push_or_recycle(v, p_copy);
 }
 
 void particles_simulation_system::add_particle(const particle_layer l, const animated_particle& p) {
 	auto& v = animated_particles[l];
-
-	if (container_full(v)) {
-		return;
-	}
-
-	v.push_back(p);
+	auto p_copy = p;
+	::simple_push_or_recycle(v, p_copy);
 }
 
 void particles_simulation_system::add_particle(const particle_layer l, const entity_id id, const homing_animated_particle& p) {
