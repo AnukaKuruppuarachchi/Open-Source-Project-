@@ -602,7 +602,6 @@ messages::health_event sentience_system::process_health_event(messages::health_e
 
 			//ensure_geq(health.value, static_cast<decltype(health.value)>(0));
 
-			/* Always spawn blood splatters for health damage, including corpse damage */
 			if (!was_dead_already && amount > 0) {
 				const auto impact_dir = h.impact_velocity.is_nonzero() ? h.impact_velocity.normalize() : vec2::zero;
 				blood_splatter_params params;
@@ -713,7 +712,7 @@ messages::health_event sentience_system::process_health_event(messages::health_e
 	return h;
 }
 
-void sentience_system::process_damage_message(const messages::damage_message& d, const logic_step step) const {
+bool sentience_system::process_damage_message(const messages::damage_message& d, const logic_step step) const {
 	auto& cosm = step.get_cosmos();
 	const auto& clk = cosm.get_clock();
 	const auto now = clk.now;
@@ -771,8 +770,7 @@ void sentience_system::process_damage_message(const messages::damage_message& d,
 							const auto steps_since = clk.now.step - owner_sentience->when_lying_corpse_replaced.step;
 
 							if (steps_since <= 2) {
-								apply_impact_impulse();
-								return;
+								return false;
 							}
 						}
 
@@ -781,8 +779,7 @@ void sentience_system::process_damage_message(const messages::damage_message& d,
 							so further damage has no effect.
 						*/
 						if (owner_sentience->arms_queued_for_detach >= 2) {
-							apply_impact_impulse();
-							return;
+							return false;
 						}
 
 						sentience = owner_sentience;
@@ -794,7 +791,7 @@ void sentience_system::process_damage_message(const messages::damage_message& d,
 	}
 
 	if (sentience && sentience->spawn_protection_cooldown.lasts(clk)) {
-		return;
+		return false;
 	}
 
 	messages::health_event event_template;
@@ -1022,18 +1019,23 @@ void sentience_system::process_damage_message(const messages::damage_message& d,
 		/* Always apply impact after all */
 		apply_impact_impulse();
 	}
+
+	return true;
 }
 
 void sentience_system::process_damages_and_generate_health_events(const logic_step step) const {
-	const auto& damages = step.get_queue<messages::damage_message>();
+	auto& damages = step.get_queue<messages::damage_message>();
 
-	for (const auto& d : damages) {
-		if (d.processed) {
-			continue;
+	erase_if(
+		damages,
+		[&](auto& d) {
+			if (d.processed) {
+				return false;
+			}
+
+			return !process_damage_message(d, step);
 		}
-
-		process_damage_message(d, step);
-	}
+	);
 }
 
 void sentience_system::cooldown_aimpunches(const logic_step step) const {

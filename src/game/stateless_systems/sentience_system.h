@@ -11,7 +11,7 @@ class sentience_system {
 public:
 	messages::health_event process_health_event(messages::health_event, const logic_step) const;
 	void process_and_post_health_event(messages::health_event, const logic_step) const;
-	void process_damage_message(const messages::damage_message&, const logic_step) const;
+	bool process_damage_message(const messages::damage_message&, const logic_step) const;
 
 	void process_special_results_of_health_events(const logic_step) const;
 
