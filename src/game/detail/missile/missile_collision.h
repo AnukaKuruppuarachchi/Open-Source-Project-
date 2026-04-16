@@ -174,7 +174,10 @@ static std::optional<missile_collision_result> collide_missile_against_surface(
 
 		if (surface_sentient) {
 			const auto missile_entity_id = typed_missile.get_id();
-			const bool is_duplicate_bullet_hit = sentience->ignore_bullet == entity_id(missile_entity_id);
+			const bool is_duplicate_bullet_hit =
+				sentience->ignore_bullet == entity_id(missile_entity_id)
+				&& sentience->ignore_bullet_when_born == missile.when_fired
+			;
 
 			if (is_duplicate_bullet_hit) {
 				/*
@@ -218,6 +221,7 @@ static std::optional<missile_collision_result> collide_missile_against_surface(
 				continues to exist (e.g. character died), it won't damage again.
 			*/
 			sentience->ignore_bullet = entity_id(missile_entity_id);
+			sentience->ignore_bullet_when_born = missile.when_fired;
 
 			if (just_died) {
 				/*

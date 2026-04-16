@@ -272,11 +272,20 @@ void draw_sentiences_hud(const draw_sentiences_hud_input in) {
 		}
 
 		const auto starting_health_angle = [&]() {
+			auto angle = 0.0f;
+
 			if (drawn_character == watched_character) {
-				return watched_character_transform.rotation + 135;
+				angle = watched_character_transform.rotation + 135;
+			}
+			else {
+				angle = (drawn_character.get_viewing_transform(interp).pos - watched_character_transform.pos).degrees() - 45;
 			}
 
-			return (drawn_character.get_viewing_transform(interp).pos - watched_character_transform.pos).degrees() - 45;
+			if (sentience.is_dead() && sentience.detached.lying_corpse.is_set()) {
+				angle += 180;
+			}
+
+			return angle;
 		}();
 
 		for (const auto& meter : in.meters) {
@@ -621,6 +630,10 @@ void draw_sentiences_hud(const draw_sentiences_hud_input in) {
 		const bool indicators_enabled = teammate_indicators.is_enabled && teammate_indicators.value > 0.f;
 
 		auto col = sentience.last_assigned_color;
+
+		if (!is_conscious) {
+			col = white;
+		}
 
 		if (indicators_enabled && (is_conscious || koed_recently) && col.a > 0) {
 			const auto cam = in.text_camera;

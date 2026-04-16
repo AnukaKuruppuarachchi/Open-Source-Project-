@@ -113,6 +113,7 @@ namespace components {
 		money_type coins_on_body = 0;
 
 		entity_id ignore_bullet;
+		augs::stepped_timestamp ignore_bullet_when_born;
 		augs::stepped_timestamp time_of_last_blood_drip;
 
 		entity_id last_damaging_gun;

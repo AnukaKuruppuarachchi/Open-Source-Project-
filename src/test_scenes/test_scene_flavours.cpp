@@ -389,6 +389,7 @@ namespace test_flavours {
 			auto& f = test_flavours::add_lying_item_dynamic_body(meta);
 			f.density *= 5.0;
 			f.restitution *= 2.;
+			f.filter = filters[predefined_filter_type::DEAD_LYING_CHARACTER];
 		}
 
 		{
@@ -401,6 +402,7 @@ namespace test_flavours {
 			auto& f = test_flavours::add_lying_item_dynamic_body(meta);
 			f.density *= 5.0;
 			f.restitution *= 2.;
+			f.filter = filters[predefined_filter_type::DEAD_LYING_CHARACTER];
 		}
 
 		auto make_detached_arm = [&](const test_plain_sprited_bodies id, const test_scene_image_id image) {

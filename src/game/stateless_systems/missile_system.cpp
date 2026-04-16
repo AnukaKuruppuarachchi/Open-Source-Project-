@@ -594,6 +594,7 @@ void missile_system::detonate_colliding_missiles(const logic_step step) {
 						m.power_multiplier_of_sender = 1.f;
 						m.headshot_multiplier_of_sender = throw_def.headshot_multiplier;
 						m.head_radius_multiplier_of_sender = throw_def.head_radius_multiplier;
+						m.when_fired = typed_melee.when_last_transferred();
 					}
 
 					if (const auto result = collide_missile_against_surface(
