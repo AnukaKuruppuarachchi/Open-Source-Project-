@@ -145,6 +145,11 @@ predefined_filters::predefined_filters() {
 		out.maskBits = make_flags(C::QUERY, C::WALL, C::GLASS_OBSTACLE);
 	}
 	{
+		auto& out = filters[predefined_filter_type::DETACHED_BODY_PART];
+		out.categoryBits = make_flags(C::SHELL);
+		out.maskBits = make_flags(C::QUERY, C::WALL, C::GLASS_OBSTACLE);
+	}
+	{
 
 		auto& out = filters[predefined_filter_type::CHARACTER_WEAPON];
 		out.categoryBits = make_flags(C::CHARACTER_WEAPON);

@@ -415,7 +415,7 @@ namespace test_flavours {
 			auto& f = test_flavours::add_lying_item_dynamic_body(meta);
 			f.density *= 7.0;
 			f.restitution *= 2.;
-			f.filter = filters[predefined_filter_type::DEAD_LYING_CHARACTER];
+			f.filter = filters[predefined_filter_type::DETACHED_BODY_PART];
 		};
 
 		make_detached_arm(test_plain_sprited_bodies::DETACHED_RESISTANCE_ARM_TOP, test_scene_image_id::RESISTANCE_GORE_ARM_TOP);
