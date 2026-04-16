@@ -50,9 +50,7 @@ static void try_detach_arms(
 		return;
 	}
 
-	const auto arm_flavour = sentience_def.detached_flavours.arm_upper;
-
-	if (!arm_flavour.is_set()) {
+	if (!sentience_def.detached_flavours.arm_upper.is_set()) {
 		return;
 	}
 
@@ -92,14 +90,16 @@ static void try_detach_arms(
 	*/
 	const bool is_upper = is_first_arm ? determine_arm_is_upper() : !sentience.first_arm_queued_as_upper;
 	const auto fly_direction = is_upper ? perp_up : -perp_up;
+	const auto arm_flavour = is_upper ? sentience_def.detached_flavours.arm_lower : sentience_def.detached_flavours.arm_upper;
 
 	/* Damage-based speed scaling: 0 damage = 0%, 100 damage = 100% of base speed */
 	const auto damage_ratio = repro::sqrt(std::min(1.0f, damage_amount / 100.0f));
 	const auto arm_velocity = fly_direction * (sentience_def.base_detached_arm_speed * damage_ratio);
-	const auto arm_transform = subject_transform;
+	auto arm_transform = subject_transform;
+	arm_transform.pos = point_of_impact;
+
 	const auto typed_subject_id = subject.get_id();
 	const auto head_effect = sentience_def.detached_head_particles;
-	const bool should_flip = !is_upper;
 
 	/*
 		Precompute the splatter origin for the immediate arm splatter.
@@ -117,19 +117,13 @@ static void try_detach_arms(
 	cosmic::queue_create_entity(
 		step,
 		arm_flavour,
-		[arm_transform, arm_velocity, typed_subject_id, should_flip](const auto& typed_entity, auto& agg) {
+		[arm_transform, arm_velocity, typed_subject_id](const auto& typed_entity, auto&) {
 			typed_entity.set_logic_transform(arm_transform);
 
 			const auto& rigid_body = typed_entity.template get<components::rigid_body>();
 			rigid_body.set_velocity(arm_velocity);
 			rigid_body.set_angular_velocity(700.f);
 			rigid_body.get_special().during_cooldown_ignore_collision_with = typed_subject_id;
-
-			if (should_flip) {
-				if (auto* geo = agg.template find<components::overridden_geo>()) {
-					geo->flip.vertically = true;
-				}
-			}
 		},
 
 		[head_effect, typed_subject_id, is_upper, access, arm_splatter_origin, fly_direction, arm_detach_sound](const auto& typed_entity, const logic_step step) {
@@ -179,8 +173,8 @@ static void try_detach_arms(
 				messages::pure_color_highlight msg;
 				msg.subject = typed_entity;
 				msg.input.starting_alpha_ratio = 1.f;
-				msg.input.maximum_duration_seconds = 0.35f;
-				msg.input.size_mult_start = 2.0f;
+				msg.input.maximum_duration_seconds = 0.4f;
+				msg.input.size_mult_start = 2.8f;
 				msg.input.color = white;
 
 				step.post_message(msg);
@@ -311,41 +305,29 @@ void handle_corpse_detonation(
 		}();
 
 		const auto lying_transform = transformr(subject_pos, lying_rotation);
-		const auto lying_facing = vec2::from_degrees(lying_rotation);
-		const auto lying_perp = lying_facing.perpendicular_cw();
 
-		if (!gentle) {
-			/* Spawn blood splatters at positions of broken body parts on the lying corpse */
-			auto rng = cosm.get_rng_for(subject);
-
-			auto spawn_splatters_at_offset = [&](const vec2 offset, const int count) {
-				const auto world_offset = lying_facing * offset.x + lying_perp * offset.y;
-				const auto world_pos = subject_pos + world_offset;
-
-				for (int i = 0; i < count; ++i) {
-					const auto random_offset = vec2::from_degrees(rng.randval(0.f, 360.f)) * rng.randval(3.f, 15.f);
-					::spawn_blood_splatter(access, rng, step, subject, world_pos + random_offset, world_pos, rng.randval(0.3f, 0.6f));
-				}
-			};
-
+		/*
+			Set up pending gore splatter counts regardless of gentle/violent detonation.
+			These will be spawned later in sentience_system.cpp when the lying corpse velocity drops below 100.
+		*/
+		{
 			const bool head_detached = sentience.detached.head.is_set() || sentience.knockout_origin.circumstances.headshot;
-			const int num_arms = sentience.num_arms_detached();
-			const bool flip_tattered = sentience.should_flip_tattered_sprite();
+			const int num_arms_for_gore = sentience.num_arms_detached();
 
 			if (head_detached) {
-				spawn_splatters_at_offset(vec2(sentience_def.corpse_head_offset), 2);
+				sentience.pending_lying_gore_head = 5;
 			}
 
-			if (num_arms >= 1) {
-				auto upper_off = vec2(sentience_def.corpse_arm_upper_offset);
-				if (flip_tattered) {
-					upper_off.y = -upper_off.y;
-				}
-				spawn_splatters_at_offset(upper_off, 2);
+			if (num_arms_for_gore >= 1) {
+				sentience.pending_lying_gore_shoulder = 3;
 			}
 
-			if (num_arms >= 2) {
-				spawn_splatters_at_offset(vec2(sentience_def.corpse_arm_lower_offset), 2);
+			if (num_arms_for_gore >= 2) {
+				sentience.pending_lying_gore_secondary_shoulder = 3;
+			}
+
+			if (!head_detached && num_arms_for_gore == 0) {
+				sentience.pending_lying_gore_center = 3;
 			}
 		}
 
@@ -363,7 +345,18 @@ void handle_corpse_detonation(
 
 		if (corpse_flavour.is_set()) {
 			const auto typed_subject_id = subject.get_id();
-			const bool should_flip = sentience.should_flip_tattered_sprite();
+
+			/*
+				Flip logic:
+				- Exactly 1 arm detached: use tattered flip (mirrors the standing corpse).
+				- 0 or 2 arms detached: random 50/50 based on when_knocked_out.step for variety.
+			*/
+			const bool should_flip = [&]() {
+				if (num_arms == 1) {
+					return sentience.should_flip_tattered_sprite();
+				}
+				return sentience.when_knocked_out.step % 2 == 0;
+			}();
 
 			/*
 				Lying corpse inherits velocity from the tattered corpse.
@@ -408,21 +401,21 @@ void handle_corpse_detonation(
 					*/
 
 					{
-						constexpr float highlight_size_bounce_mult = 1.5f;
+						constexpr float highlight_size_bounce_mult = 1.85f;
 
 						messages::pure_color_highlight msg;
 						msg.subject = typed_entity;
 						msg.input.starting_alpha_ratio = 1.f;
-						msg.input.maximum_duration_seconds = 0.25f;
 						msg.input.color = white;
 
 						if (!gentle) {
 							msg.input.size_mult_start = highlight_size_bounce_mult;
+							msg.input.maximum_duration_seconds = 0.35f;
 						}
 
 						if (gentle) {
 							msg.input.size_mult_start = 1.15f;
-							msg.input.maximum_duration_seconds = 0.18f;
+							msg.input.maximum_duration_seconds = 0.25f;
 						}
 
 						step.post_message(msg);
@@ -599,7 +592,7 @@ void perform_knockout(
 							msg.subject = typed_entity;
 							msg.input.starting_alpha_ratio = 1.f;
 							msg.input.maximum_duration_seconds = 0.85f;
-							msg.input.size_mult_start = 2.5f;
+							msg.input.size_mult_start = 3.0f;
 							msg.input.color = white;
 
 							step.post_message(msg);

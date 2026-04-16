@@ -49,6 +49,11 @@ void resurrect(const logic_step step, const E& typed_handle, const float spawn_p
 	sentience.first_arm_queued_as_upper = false;
 	sentience.idle_blood_drip_count = 0;
 	sentience.last_corpse_damage_direction = vec2::zero;
+	sentience.pending_lying_gore_head = 0;
+	sentience.pending_lying_gore_shoulder = 0;
+	sentience.pending_lying_gore_secondary_shoulder = 0;
+	sentience.pending_lying_gore_center = 0;
+	sentience.when_lying_corpse_settled = {};
 
 	if (sentience.has_exploded) {
 		sentience.has_exploded = false;

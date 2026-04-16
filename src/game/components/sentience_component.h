@@ -127,6 +127,12 @@ namespace components {
 		vec2 last_corpse_damage_direction;
 		bool first_arm_queued_as_upper = false;
 		pad_bytes<3> pad3;
+
+		int pending_lying_gore_head = 0;
+		int pending_lying_gore_shoulder = 0;
+		int pending_lying_gore_secondary_shoulder = 0;
+		int pending_lying_gore_center = 0;
+		augs::stepped_timestamp when_lying_corpse_settled;
 		// END GEN INTROSPECTOR
 
 		bool is_requesting_any_interaction() const {
@@ -313,6 +319,7 @@ namespace invariants {
 
 		assets::image_id corpse_head_image;
 		assets::image_id corpse_head_splatter_image;
+		assets::image_id corpse_body_splatter_image;
 		vec2i corpse_head_offset = { -20, 0 };
 		vec2i corpse_arm_upper_offset = { 0, -15 };
 		vec2i corpse_arm_lower_offset = { 0, 15 };

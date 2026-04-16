@@ -280,6 +280,105 @@ void sentience_system::regenerate_values_and_advance_spell_logic(const logic_ste
 				}
 			}
 
+			/*
+				Lying corpse gore splatters at detached body part positions.
+				Triggered when the lying corpse's velocity drops below 100,
+				multiple rounds per body part at random intervals seeded from when_knocked_out.step.
+			*/
+			{
+				const bool has_pending_lying_gore =
+					sentience.pending_lying_gore_head > 0 ||
+					sentience.pending_lying_gore_shoulder > 0 ||
+					sentience.pending_lying_gore_secondary_shoulder > 0 ||
+					sentience.pending_lying_gore_center > 0
+				;
+
+				if (has_pending_lying_gore && sentience.has_exploded) {
+					const auto lying_corpse_id = sentience.detached.lying_corpse;
+
+					if (const auto lying_corpse = cosm[lying_corpse_id]) {
+						const auto vel = lying_corpse.get_effective_velocity();
+						constexpr real32 settle_vel = 100.f;
+
+						if (vel.length_sq() < settle_vel * settle_vel) {
+							if (!sentience.when_lying_corpse_settled.was_set()) {
+								sentience.when_lying_corpse_settled = now;
+							}
+
+							const auto passed_secs = cosm.get_clock().get_passed_secs(sentience.when_lying_corpse_settled);
+							const auto base_seed = sentience.when_knocked_out.step;
+
+							const auto corpse_pos = lying_corpse.get_logic_transform().pos;
+							const auto corpse_rotation = lying_corpse.get_logic_transform().rotation;
+							const auto corpse_facing = vec2::from_degrees(corpse_rotation);
+							const auto corpse_perp = corpse_facing.perpendicular_cw();
+
+							const auto corpse_image_id = lying_corpse.template get<invariants::sprite>().image_id;
+							auto corpse_torso = cosm.get_logical_assets().get_offsets(corpse_image_id).torso;
+
+							const bool corpse_flipped = [&]() {
+								if (const auto flips = lying_corpse.calc_flip_flags()) {
+									return flips->vertically;
+								}
+								return false;
+							}();
+
+							if (corpse_flipped) {
+								/*
+									Don't use flip_vertically() here because it swaps
+									shoulder and secondary_shoulder, breaking the mapping
+									between pending_lying_gore_shoulder/secondary_shoulder
+									and the actual corpse sprite offsets.
+								*/
+								corpse_torso.head.flip_vertically();
+								corpse_torso.shoulder.flip_vertically();
+								corpse_torso.secondary_shoulder.flip_vertically();
+							}
+
+							auto calc_world_pos = [&](const transformi& offset) {
+								const auto local = vec2(offset.pos);
+								return corpse_pos + corpse_facing * local.x + corpse_perp * local.y;
+							};
+
+							auto try_spawn_gore = [&](int& pending, const int total_rounds, const transformi& offset, const uint32_t part_index, const int splats_per_round, const float spread) {
+								if (pending <= 0) {
+									return;
+								}
+
+								/*
+									Per-part random delay: 0.3s-0.8s base offset + 0.4s between rounds.
+									Seeded from (base_seed, part_index) for deterministic variation.
+								*/
+								const auto part_delay = ((base_seed * 7u + part_index * 13u) % 500u) / 1000.f + 0.3f;
+								const auto completed = total_rounds - pending;
+								const auto trigger_time = part_delay + completed * 0.4f;
+
+								if (passed_secs >= trigger_time) {
+									auto access = allocate_new_entity_access();
+									auto rng = cosm.get_rng_for(subject);
+
+									const auto world_pos = calc_world_pos(offset);
+
+									for (int i = 0; i < splats_per_round; ++i) {
+										const auto random_offset = vec2::from_degrees(rng.randval(0.f, 360.f)) * rng.randval(3.f, spread);
+										::spawn_blood_splatter(access, rng, step, subject, world_pos + random_offset, world_pos, rng.randval(0.3f, 0.6f));
+									}
+
+									--pending;
+								}
+							};
+
+							try_spawn_gore(sentience.pending_lying_gore_head, 5, corpse_torso.head, 0u, 3, 20.f);
+							try_spawn_gore(sentience.pending_lying_gore_shoulder, 3, corpse_torso.shoulder, 1u, 2, 15.f);
+							try_spawn_gore(sentience.pending_lying_gore_secondary_shoulder, 3, corpse_torso.secondary_shoulder, 2u, 2, 15.f);
+
+							const auto center_offset = transformi();
+							try_spawn_gore(sentience.pending_lying_gore_center, 3, center_offset, 3u, 2, 15.f);
+						}
+					}
+				}
+			}
+
 			auto& health = sentience.get<health_meter_instance>();
 			auto& consciousness = sentience.get<consciousness_meter_instance>();
 			auto& personal_electricity = sentience.get<personal_electricity_meter_instance>();

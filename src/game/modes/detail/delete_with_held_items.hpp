@@ -37,6 +37,9 @@ static void delete_with_held_items_except(const entity_flavour_id drop_instead, 
 
 		if (auto sentience = handle.template find<components::sentience>()) {
 			q.push_back(sentience->detached.head);
+			q.push_back(sentience->detached.arm_upper);
+			q.push_back(sentience->detached.arm_lower);
+			q.push_back(sentience->detached.lying_corpse);
 		}
 
 		reverse_perform_deletions(q, handle.get_cosmos());

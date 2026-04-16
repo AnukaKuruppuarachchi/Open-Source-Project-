@@ -4154,7 +4154,7 @@ namespace test_flavours {
 			gun_def.shell_spread_degrees = 12.f;
 			gun_def.shell_velocity = {2500.f, 3500.f};
 			gun_def.damage_multiplier = 22.4f;
-			gun_def.headshot_multiplier = 3.0f;
+			gun_def.headshot_multiplier = 3.85f;
 			gun_def.num_last_bullets_to_trigger_low_ammo_cue = 2;
 			gun_def.low_ammo_cue_sound.id = to_sound_id(test_scene_sound_id::LOW_AMMO_CUE);
 			gun_def.recoil_multiplier = 4.5f;
@@ -4174,7 +4174,7 @@ namespace test_flavours {
 			set_density_mult(meta, 2.0f);
 			make_default_gun_container(meta, item_holding_stance::SNIPER_LIKE, 1850.f, 0.f, false, "0.1");
 			meta.get<invariants::item>().wield_sound.id = to_sound_id(test_scene_sound_id::STANDARD_SNIPER_DRAW);
-			meta.get<invariants::item>().standard_price = 5200;
+			meta.get<invariants::item>().standard_price = 5800;
 			set_chambering_duration_ms(meta, 650.f);
 			meta.template get<invariants::item>().space_occupied_per_charge = to_space_units("8");
 			only_allow_mag(meta, test_container_items::AWKA_MAGAZINE);
@@ -4210,7 +4210,7 @@ namespace test_flavours {
 			gun_def.shell_spread_degrees = 12.f;
 			gun_def.shell_velocity = {2500.f, 3500.f};
 			gun_def.damage_multiplier = 9.6f;
-			gun_def.headshot_multiplier = 3.0f;
+			gun_def.headshot_multiplier = 3.85f;
 			gun_def.num_last_bullets_to_trigger_low_ammo_cue = 2;
 			gun_def.low_ammo_cue_sound.id = to_sound_id(test_scene_sound_id::LOW_AMMO_CUE);
 			gun_def.recoil_multiplier = 2.8f;

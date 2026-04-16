@@ -280,6 +280,7 @@ enum class test_scene_sound_id {
 
 	CORPSE_FOOTSTEP,
 	CORPSE_FALL,
+	CORPSE_IMPACT,
 	GORE_DETACH,
 
 	CRATE_DESTRUCTION,

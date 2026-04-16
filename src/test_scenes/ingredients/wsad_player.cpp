@@ -277,8 +277,8 @@ namespace test_flavours {
 
 			sentience.max_inertia_when_rotation_possible = 1000.f;
 			sentience.detached_flavours.head = to_entity_flavour_id(test_plain_sprited_bodies::DETACHED_METROPOLIS_HEAD);
-			sentience.detached_flavours.arm_upper = to_entity_flavour_id(test_plain_sprited_bodies::DETACHED_METROPOLIS_ARM);
-			sentience.detached_flavours.arm_lower = to_entity_flavour_id(test_plain_sprited_bodies::DETACHED_METROPOLIS_ARM);
+			sentience.detached_flavours.arm_upper = to_entity_flavour_id(test_plain_sprited_bodies::DETACHED_METROPOLIS_ARM_TOP);
+			sentience.detached_flavours.arm_lower = to_entity_flavour_id(test_plain_sprited_bodies::DETACHED_METROPOLIS_ARM_BOTTOM);
 			sentience.base_detached_head_speed = -8000.f;
 			sentience.base_detached_arm_speed = -1000.f;
 
@@ -287,7 +287,8 @@ namespace test_flavours {
 			sentience.lying_corpse_noarms_flavour = to_entity_flavour_id(test_plain_sprited_bodies::LYING_CORPSE_METROPOLIS_NOARMS);
 
 			sentience.corpse_head_image = to_image_id(test_scene_image_id::METROPOLIS_TORSO_CORPSE_HEAD);
-			sentience.corpse_head_splatter_image = to_image_id(test_scene_image_id::METROPOLIS_TORSO_CORPSE_HEAD_SPLATTER);
+			sentience.corpse_head_splatter_image = to_image_id(test_scene_image_id::CORPSE_HEAD_SPLATTER);
+			sentience.corpse_body_splatter_image = to_image_id(test_scene_image_id::CORPSE_BODY_SPLATTER);
 
 			sentience.detached_head_particles.id = to_particle_effect_id(test_scene_particle_effect_id::DETACHED_HEAD_FIRE);
 			sentience.detached_head_particles.modifier.color = rgba(192, 0, 0, 255);
@@ -298,7 +299,7 @@ namespace test_flavours {
 			sentience.health_decrease_particles.modifier.scale_lifetimes = 0.8f;
 
 			sentience.health_decrease_sound.id = to_sound_id(test_scene_sound_id::IMPACT);
-			sentience.corpse_health_decrease_sound.id = to_sound_id(test_scene_sound_id::IMPACT);
+			sentience.corpse_health_decrease_sound.id = to_sound_id(test_scene_sound_id::CORPSE_IMPACT);
 			sentience.headshot_sound.id = to_sound_id(test_scene_sound_id::HEADSHOT);
 			sentience.headshot_sound.modifier.doppler_factor = 0;
 			sentience.headshot_sound.modifier.reference_distance = 1700.f;
@@ -398,8 +399,8 @@ namespace test_flavours {
 				}
 			}
 
-			sentience.damage_required_for_corpse_explosion = 70.f;
-			sentience.corpse_burning_seconds = 1.f;
+			sentience.damage_required_for_corpse_explosion = 90.f;
+			sentience.corpse_burning_seconds = 1.25f;
 			sentience.corpse_catch_fire_particles.id = to_particle_effect_id(test_scene_particle_effect_id::CORPSE_CATCH_FIRE);
 			sentience.corpse_catch_fire_particles.modifier.color = rgba(192, 0, 0, 255);
 			sentience.corpse_catch_fire_sound.id = to_sound_id(test_scene_sound_id::CORPSE_CATCH_FIRE);
@@ -475,8 +476,8 @@ namespace test_flavours {
 			meta.get<invariants::text_details>().name = format_enum(test_controlled_characters::RESISTANCE_SOLDIER);
 
 			meta.get<invariants::sentience>().detached_flavours.head = to_entity_flavour_id(test_plain_sprited_bodies::DETACHED_RESISTANCE_HEAD);
-			meta.get<invariants::sentience>().detached_flavours.arm_upper = to_entity_flavour_id(test_plain_sprited_bodies::DETACHED_RESISTANCE_ARM);
-			meta.get<invariants::sentience>().detached_flavours.arm_lower = to_entity_flavour_id(test_plain_sprited_bodies::DETACHED_RESISTANCE_ARM);
+			meta.get<invariants::sentience>().detached_flavours.arm_upper = to_entity_flavour_id(test_plain_sprited_bodies::DETACHED_RESISTANCE_ARM_TOP);
+			meta.get<invariants::sentience>().detached_flavours.arm_lower = to_entity_flavour_id(test_plain_sprited_bodies::DETACHED_RESISTANCE_ARM_BOTTOM);
 			meta.get<invariants::sentience>().detached_head_particles.modifier.color = rgba(192, 0, 0, 255);
 			meta.get<invariants::sentience>().corpse_catch_fire_particles.modifier.color = rgba(192, 0, 0, 255);
 
@@ -485,7 +486,8 @@ namespace test_flavours {
 			meta.get<invariants::sentience>().lying_corpse_noarms_flavour = to_entity_flavour_id(test_plain_sprited_bodies::LYING_CORPSE_RESISTANCE_NOARMS);
 
 			meta.get<invariants::sentience>().corpse_head_image = to_image_id(test_scene_image_id::RESISTANCE_TORSO_CORPSE_HEAD);
-			meta.get<invariants::sentience>().corpse_head_splatter_image = to_image_id(test_scene_image_id::RESISTANCE_TORSO_CORPSE_HEAD_SPLATTER);
+			meta.get<invariants::sentience>().corpse_head_splatter_image = to_image_id(test_scene_image_id::CORPSE_HEAD_SPLATTER);
+			meta.get<invariants::sentience>().corpse_body_splatter_image = to_image_id(test_scene_image_id::CORPSE_BODY_SPLATTER);
 
 
 			{

@@ -403,24 +403,10 @@ namespace test_flavours {
 			f.restitution *= 2.;
 		}
 
-		{
+		auto make_detached_arm = [&](const test_plain_sprited_bodies id, const test_scene_image_id image) {
 			auto& meta = flavour_with_sprite(
-				test_plain_sprited_bodies::DETACHED_RESISTANCE_ARM,
-				test_scene_image_id::RESISTANCE_GORE_ARM,
-				render_layer::SOLID_OBSTACLES
-			);
-
-			auto& f = test_flavours::add_lying_item_dynamic_body(meta);
-			f.density *= 7.0;
-			f.restitution *= 2.;
-
-			f.filter = filters[predefined_filter_type::DEAD_LYING_CHARACTER];
-		}
-
-		{
-			auto& meta = flavour_with_sprite(
-				test_plain_sprited_bodies::DETACHED_METROPOLIS_ARM,
-				test_scene_image_id::METROPOLIS_GORE_ARM,
+				id,
+				image,
 				render_layer::SOLID_OBSTACLES
 			);
 
@@ -428,7 +414,12 @@ namespace test_flavours {
 			f.density *= 7.0;
 			f.restitution *= 2.;
 			f.filter = filters[predefined_filter_type::DEAD_LYING_CHARACTER];
-		}
+		};
+
+		make_detached_arm(test_plain_sprited_bodies::DETACHED_RESISTANCE_ARM_TOP, test_scene_image_id::RESISTANCE_GORE_ARM_TOP);
+		make_detached_arm(test_plain_sprited_bodies::DETACHED_RESISTANCE_ARM_BOTTOM, test_scene_image_id::RESISTANCE_GORE_ARM_BOTTOM);
+		make_detached_arm(test_plain_sprited_bodies::DETACHED_METROPOLIS_ARM_TOP, test_scene_image_id::METROPOLIS_GORE_ARM_TOP);
+		make_detached_arm(test_plain_sprited_bodies::DETACHED_METROPOLIS_ARM_BOTTOM, test_scene_image_id::METROPOLIS_GORE_ARM_BOTTOM);
 
 		auto make_lying_corpse_flavour = [&](
 			const test_plain_sprited_bodies id,
@@ -447,6 +438,7 @@ namespace test_flavours {
 
 			meta.template get<invariants::rigid_body>().damping.linear = 20.f;
 			meta.template get<invariants::rigid_body>().damping.angular = 20.f;
+			meta.get<invariants::rigid_body>().fixed_rotation = true;
 		};
 
 		make_lying_corpse_flavour(test_plain_sprited_bodies::LYING_CORPSE_METROPOLIS, test_scene_image_id::METROPOLIS_TORSO_CORPSE);
