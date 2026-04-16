@@ -58,24 +58,19 @@ static void try_detach_arms(
 	const auto subject_transform = subject.get_logic_transform();
 
 	/*
-		Use the damage direction (if available) to determine the perpendicular
-		flight directions for detached arms. This looks more natural than
-		using the corpse facing since arms should fly sideways relative to
-		the bullet impact direction.
+		Use character facing to determine which arm is upper vs lower and which
+		direction each arm flies. perp_cw of facing-right = screen-down, so negate
+		to get screen-up. This stays constant regardless of which side the bullet
+		comes from, so upper arm always flies up and lower arm always flies down
+		relative to the character's orientation.
 	*/
-	const auto base_direction = [&]() {
-		if (sentience.last_corpse_damage_direction.is_nonzero()) {
-			return sentience.last_corpse_damage_direction.normalize();
-		}
-		return vec2::from_degrees(subject_transform.rotation);
-	}();
-	const auto perp_up = base_direction.perpendicular_cw();
+	const auto facing_up = -vec2::from_degrees(subject_transform.rotation).perpendicular_cw();
 
 	auto determine_arm_is_upper = [&]() -> bool {
 		if (point_of_impact.is_nonzero()) {
 			const auto body_center = subject_transform.pos;
 			const auto to_impact = point_of_impact - body_center;
-			const auto dot = to_impact.dot(perp_up);
+			const auto dot = to_impact.dot(facing_up);
 			return dot < 0;
 		}
 		return true;
@@ -90,7 +85,7 @@ static void try_detach_arms(
 		Second arm always goes in the opposite direction of the first.
 	*/
 	const bool is_upper = is_first_arm ? determine_arm_is_upper() : !sentience.first_arm_queued_as_upper;
-	const auto fly_direction = is_upper ? perp_up : -perp_up;
+	const auto fly_direction = is_upper ? facing_up : -facing_up;
 	const auto arm_flavour = is_upper ? sentience_def.detached_flavours.arm_lower : sentience_def.detached_flavours.arm_upper;
 
 	/* Damage-based speed scaling: 0 damage = 0%, 100 damage = 100% of base speed */
@@ -210,7 +205,11 @@ void handle_corpse_damage(
 	const vec2 point_of_impact,
 	const real32 damage_amount
 ) {
-	if (impact_direction.is_nonzero()) {
+	/*
+		Only update the damage direction if it hasn't been set yet.
+		This preserves the direction of the KILLING blow.
+	*/
+	if (impact_direction.is_nonzero() && sentience.last_corpse_damage_direction.is_zero()) {
 		sentience.last_corpse_damage_direction = impact_direction;
 	}
 
@@ -569,6 +568,10 @@ void perform_knockout(
 
 		if (sentience.is_dead()) {
 			sentience.health_value_at_death = sentience.template get<health_meter_instance>().value;
+
+			if (direction.is_nonzero()) {
+				sentience.last_corpse_damage_direction = direction;
+			}
 		}
 
 		if (sentience.is_dead() && origin.circumstances.headshot) {
