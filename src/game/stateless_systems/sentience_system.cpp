@@ -25,6 +25,7 @@
 #include "game/components/sentience_component.h"
 #include "game/components/render_component.h"
 #include "game/components/movement_component.h"
+#include "game/components/owner_component.h"
 
 #include "game/detail/inventory/inventory_slot.h"
 #include "game/detail/inventory/inventory_slot_id.h"
@@ -741,14 +742,63 @@ void sentience_system::process_damage_message(const messages::damage_message& d,
 		}
 	};
 
-	auto* const sentience = subject.find<components::sentience>();
+	auto* sentience = subject.find<components::sentience>();
+
+	/*
+		If the subject has no sentience but has an owner,
+		redirect health processing to the owner's sentience.
+		This lets lying corpses forward melee damage to the dead character.
+	*/
+	auto sentience_subject_id = d.subject;
+
+	if (!sentience) {
+		if (const auto* owner_comp = subject.find<components::owner>()) {
+			const auto owner = cosm[owner_comp->owner_body];
+
+			if (owner) {
+				if (auto* owner_sentience = owner.find<components::sentience>()) {
+					const bool is_dead = owner_sentience->is_dead();
+					const bool is_lying_corpse = owner_sentience->detached.lying_corpse == subject.get_id();
+					const bool is_not_conscious = !owner_sentience->is_conscious();
+
+					if (is_dead && is_lying_corpse && is_not_conscious) {
+						/*
+							Skip damage entirely if the corpse was just replaced
+							this step or last step to prevent melee double-hits
+							from the same swing hitting both old and new corpse.
+						*/
+						if (owner_sentience->when_lying_corpse_replaced.was_set()) {
+							const auto steps_since = clk.now.step - owner_sentience->when_lying_corpse_replaced.step;
+
+							if (steps_since <= 2) {
+								apply_impact_impulse();
+								return;
+							}
+						}
+
+						/*
+							NOARMS corpses cannot lose any more arms,
+							so further damage has no effect.
+						*/
+						if (owner_sentience->arms_queued_for_detach >= 2) {
+							apply_impact_impulse();
+							return;
+						}
+
+						sentience = owner_sentience;
+						sentience_subject_id = owner.get_id();
+					}
+				}
+			}
+		}
+	}
 
 	if (sentience && sentience->spawn_protection_cooldown.lasts(clk)) {
 		return;
 	}
 
 	messages::health_event event_template;
-	event_template.subject = d.subject;
+	event_template.subject = sentience_subject_id;
 	event_template.point_of_impact = d.point_of_impact;
 	event_template.impact_velocity = d.impact_velocity;
 	event_template.special_result = messages::health_event::result_type::NONE;
@@ -956,7 +1006,7 @@ void sentience_system::process_damage_message(const messages::damage_message& d,
 		};
 
 		if (sentience) {
-			apply_shake(subject);
+			apply_shake(cosm[sentience_subject_id]);
 		}
 		else if (owning_capability) {
 			apply_shake(owning_capability);

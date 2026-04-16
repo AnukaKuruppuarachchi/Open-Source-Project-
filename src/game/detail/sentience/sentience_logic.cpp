@@ -11,6 +11,7 @@
 #include "game/messages/pure_color_highlight_message.h"
 #include "game/messages/start_particle_effect.h"
 #include "game/detail/view_input/sound_effect_input.h"
+#include "game/components/owner_component.h"
 
 #include "augs/log.h"
 
@@ -40,8 +41,9 @@ static void try_detach_arms(
 	const bool was_headshot_kill = sentience.knockout_origin.circumstances.headshot;
 	const auto base = was_headshot_kill ? sentience.health_value_at_death : 0.f;
 
-	const auto threshold_1 = base - arm_detach_damage_offset;
-	const auto threshold_2 = base - arm_detach_damage_offset * 2.f;
+	const auto effective_offset = sentience.has_exploded ? arm_detach_damage_offset * 1.5f : arm_detach_damage_offset;
+	const auto threshold_1 = base - effective_offset;
+	const auto threshold_2 = base - effective_offset * 2.f;
 
 	const int arms_should_be_detached = 
 		current_health <= threshold_2 ? 2 :
@@ -109,6 +111,7 @@ static void try_detach_arms(
 		sentience.first_arm_queued_as_upper = is_upper;
 	}
 	sentience.arms_queued_for_detach++;
+	sentience.coins_on_body += 500;
 
 	cosmic::queue_create_entity(
 		step,
@@ -246,13 +249,200 @@ void handle_corpse_damage(
 	const auto damage_past_breaking_point = -health.value - sentience_def.damage_required_for_corpse_explosion;
 	const bool is_ignited = when_ignited.was_set();
 
-	if (damage_past_breaking_point > 0) {
+	if (damage_past_breaking_point > 0 && !sentience.has_exploded) {
 		if (!is_ignited) {
 			ignite_corpse();
 		}
 	}
 
+	/*
+		Post a damage highlight on the lying corpse so
+		the hit flash is visible on the physical body.
+	*/
+	if (sentience.has_exploded && damage_amount > 0) {
+		if (const auto lying_corpse = cosm[sentience.detached.lying_corpse]) {
+			messages::pure_color_highlight msg;
+			msg.subject = lying_corpse.get_id();
+			msg.input.starting_alpha_ratio = 1.f;
+			msg.input.color = white;
+			msg.input.size_mult_start = 1.5f;
+			msg.input.maximum_duration_seconds = 0.12f;
+
+			step.post_message(msg);
+		}
+	}
+
+	const auto prev_arms_queued = sentience.arms_queued_for_detach;
+
 	try_detach_arms(allocate_new_entity_access(), step, subject, sentience, sentience_def, point_of_impact, damage_amount);
+
+	/*
+		If an arm was just detached while the lying corpse already exists,
+		replace it with the correct sprite variant (noarm/noarms).
+	*/
+	const auto new_arms = sentience.arms_queued_for_detach;
+
+	if (new_arms != prev_arms_queued && sentience.detached.lying_corpse.is_set()) {
+		sentience.when_lying_corpse_replaced = cosm.get_timestamp();
+
+		const auto lying_corpse = cosm[sentience.detached.lying_corpse];
+
+		if (lying_corpse) {
+			const auto new_flavour = [&]() {
+				if (new_arms >= 2) {
+					return sentience_def.lying_corpse_noarms_flavour;
+				}
+				if (new_arms >= 1) {
+					return sentience_def.lying_corpse_noarm_flavour;
+				}
+				return sentience_def.lying_corpse_flavour;
+			}();
+
+			if (new_flavour.is_set()) {
+				const auto old_transform = lying_corpse.get_logic_transform();
+				const auto old_velocity = lying_corpse.get_effective_velocity();
+
+				const auto old_flip = [&]() {
+					auto result = flip_flags();
+					lying_corpse.dispatch([&](const auto& typed) {
+						if (const auto* geo = typed.get().template find<components::overridden_geo>()) {
+							result = geo->flip;
+						}
+					});
+					return result;
+				}();
+
+				/*
+					Recompute flip based on current arm detachment state.
+					Same logic as the initial lying corpse spawn.
+				*/
+				const bool should_flip = [&]() {
+					if (new_arms == 1) {
+						return sentience.should_flip_tattered_sprite();
+					}
+					return old_flip.vertically;
+				}();
+
+				const auto typed_subject_id = subject.get_id();
+				const auto old_lying_corpse_id = lying_corpse.get_id();
+
+				/*
+					Precompute the head offset for the replacement corpse sprite
+					so we can retarget the detached_head_particles stream.
+				*/
+				const bool head_detached =
+					sentience.detached.head.is_set()
+					|| sentience.knockout_origin.circumstances.headshot
+				;
+
+				const auto head_effect = sentience_def.detached_head_particles;
+
+				const auto corpse_head_offset = [&]() {
+					if (head_detached && head_effect.id.is_set()) {
+						const auto corpse_image_id = cosm.on_flavour(
+							new_flavour,
+							[](const auto& f) { return f.get_image_id(); }
+						);
+
+						if (corpse_image_id.is_set()) {
+							auto head_off = cosm.get_logical_assets().get_offsets(corpse_image_id).torso.head;
+
+							if (should_flip) {
+								head_off.flip_vertically();
+							}
+
+							return head_off;
+						}
+					}
+
+					return transformi();
+				}();
+
+				step.queue_deletion_of(lying_corpse, "Replacing lying corpse with updated arm variant");
+
+				/*
+					Update pending gore splatters for the newly detached arm(s).
+				*/
+				if (new_arms >= 1 && prev_arms_queued < 1) {
+					sentience.pending_lying_gore_shoulder = 3;
+				}
+
+				if (new_arms >= 2 && prev_arms_queued < 2) {
+					sentience.pending_lying_gore_secondary_shoulder = 3;
+				}
+
+				/*
+					Reset the settlement timer so gore dripping re-evaluates
+					with the new corpse.
+				*/
+				sentience.when_lying_corpse_settled = {};
+
+				cosmic::queue_create_entity(
+					step,
+					new_flavour,
+					[old_transform, old_velocity, should_flip, typed_subject_id](const auto& typed_entity, auto& agg) {
+						typed_entity.set_logic_transform(old_transform);
+
+						const auto& rigid_body = typed_entity.template get<components::rigid_body>();
+						rigid_body.set_velocity(old_velocity);
+						rigid_body.set_angular_velocity(0.f);
+
+						if (should_flip) {
+							if (auto* geo = agg.template find<components::overridden_geo>()) {
+								geo->flip.vertically = true;
+							}
+						}
+
+						if (auto* owner_comp = agg.template find<components::owner>()) {
+							owner_comp->owner_body = typed_subject_id;
+						}
+					},
+
+					[typed_subject_id, old_lying_corpse_id, head_detached, head_effect, corpse_head_offset](const auto& typed_entity, const logic_step step) {
+						if (const auto typed_subject = step.get_cosmos()[typed_subject_id]) {
+							auto& s = typed_subject.template get<components::sentience>();
+							s.detached.lying_corpse = typed_entity;
+						}
+
+						/*
+							Send a white highlight for the replacement lying corpse.
+						*/
+						{
+							messages::pure_color_highlight msg;
+							msg.subject = typed_entity;
+							msg.input.starting_alpha_ratio = 1.f;
+							msg.input.color = white;
+							msg.input.size_mult_start = 1.85f;
+							msg.input.maximum_duration_seconds = 0.2f;
+
+							step.post_message(msg);
+						}
+
+						/*
+							Retarget the detached_head_particles stream
+							from the old lying corpse to the replacement.
+						*/
+						if (head_detached && head_effect.id.is_set()) {
+							const auto predictability =
+								step.get_settings().effect_prediction.predict_death_particles
+								? always_predictable_v
+								: never_predictable_v
+							;
+
+							messages::change_particle_effect change;
+							change.predictability = predictability;
+							change.match_chased_subject = old_lying_corpse_id;
+							change.match_effect_id = head_effect.id;
+							change.new_target = typed_entity;
+							change.new_offset = { vec2(corpse_head_offset.pos), corpse_head_offset.rotation + 180.f };
+
+							step.post_message(change);
+						}
+					}
+				);
+			}
+		}
+	}
 }
 
 void handle_corpse_detonation(
@@ -402,7 +592,7 @@ void handle_corpse_detonation(
 			cosmic::queue_create_entity(
 				step,
 				corpse_flavour,
-				[lying_transform, lying_velocity, should_flip](const auto& typed_entity, auto& agg) {
+				[lying_transform, lying_velocity, should_flip, typed_subject_id](const auto& typed_entity, auto& agg) {
 					typed_entity.set_logic_transform(lying_transform);
 
 					const auto& rigid_body = typed_entity.template get<components::rigid_body>();
@@ -414,6 +604,10 @@ void handle_corpse_detonation(
 						if (auto* geo = agg.template find<components::overridden_geo>()) {
 							geo->flip.vertically = true;
 						}
+					}
+
+					if (auto* owner_comp = agg.template find<components::owner>()) {
+						owner_comp->owner_body = typed_subject_id;
 					}
 				},
 

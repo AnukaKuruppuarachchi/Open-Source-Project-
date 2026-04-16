@@ -347,7 +347,13 @@ void physics_world_cache::specific_infer_colliders_from_scratch(const E& handle,
 
 	if (const auto sentience = handle.template find<components::sentience>()) {
 		if (sentience->has_exploded) {
-			fixdef.isSensor = true;
+			/*
+				Zero out category/mask so the ghost is completely invisible
+				to all physics queries (including melee). The lying corpse
+				entity handles physical interactions from now on.
+			*/
+			fixdef.filter.categoryBits = 0;
+			fixdef.filter.maskBits = 0;
 		}
 	}
 
@@ -637,13 +643,22 @@ void physics_world_cache::specific_infer_colliders(const E& handle) {
 				compared.GetBody()->ResetMassData();
 			}
 
-			const auto chosen_filters = calc_filters(handle);
+			auto chosen_filters = calc_filters(handle);
+			auto chosen_sensor = colliders_data.sensor;
+
+			if (const auto sentience = handle.template find<components::sentience>()) {
+				if (sentience->has_exploded) {
+					chosen_filters.categoryBits = 0;
+					chosen_filters.maskBits = 0;
+				}
+			}
+
 			const bool rebuild_filters = compared.GetFilterData() != chosen_filters;
 
 			for (auto& f : cache.constructed_fixtures) {
 				f.get()->SetRestitution(colliders_data.restitution);
 				f.get()->SetFriction(colliders_data.friction);
-				f.get()->SetSensor(colliders_data.sensor);
+				f.get()->SetSensor(chosen_sensor);
 
 				if (rebuild_filters) {
 					f.get()->SetFilterData(chosen_filters);

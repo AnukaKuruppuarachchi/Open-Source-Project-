@@ -134,6 +134,7 @@ namespace components {
 		int pending_lying_gore_secondary_shoulder = 0;
 		int pending_lying_gore_center = 0;
 		augs::stepped_timestamp when_lying_corpse_settled;
+		augs::stepped_timestamp when_lying_corpse_replaced;
 		// END GEN INTROSPECTOR
 
 		bool is_requesting_any_interaction() const {
