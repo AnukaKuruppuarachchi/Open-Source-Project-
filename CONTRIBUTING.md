@@ -1,10 +1,10 @@
-**Introduction**
+# **Introduction**
 
 Thank you for your interest in contributing to Capture the Flag (CTF) Game Mode for Hypersomnia!  
 The goal of the project is to extend the existing gameplay, and we welcome any type of contributions: code, documentation, bug reports, and suggestions.
 
 
-**Table of Contents**
+## **Table of Contents**
 
 0. Types of contributions we're looking for  
 1. How to contribute  
@@ -12,7 +12,7 @@ The goal of the project is to extend the existing gameplay, and we welcome any t
 3. Language  
 
 
-**0. Types of Contributions We're Looking For**
+## **0. Types of Contributions We're Looking For**
 
 We welcome contributions of all kinds, including:
 
@@ -44,7 +44,7 @@ We welcome contributions of all kinds, including:
 - Feedback on user experience  
 
 
-**1. How to Contribute**
+## **1. How to Contribute**
 
 To contribute, follow these steps:
 
@@ -72,13 +72,13 @@ Upload your branch to your GitHub fork:
 - All pull requests will be reviewed before merging  
 
 
-**2. Coding Conventions**
+## **2. Coding Conventions**
 
 - The project uses C++, matching the Hypersomnia code  
 - Follow the existing Hypersomnia coding style  
 - Use clear, descriptive variable and function names  
 
 
-**3. Language**
+## **3. Language**
 
 All documentation, comments, and commit messages should be written clearly and professionally.
