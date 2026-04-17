@@ -75,8 +75,18 @@ namespace augs {
 
 #endif
 
+#if PLATFORM_WINDOWS
+#include <windows.h>
+#endif
+
 namespace augs {
-#ifdef __APPLE__   
+#if PLATFORM_WINDOWS
+	path_type get_executable_path() {
+		char path[MAX_PATH];
+		GetModuleFileNameA(NULL, path, MAX_PATH);
+		return path;
+	}
+#elif defined(__APPLE__)
 #include "CoreFoundation/CoreFoundation.h"
 #include <unistd.h>
 #include <libgen.h>

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.5)
 
 project(version_file_generator)
 message("Building version_file_generator.")
@@ -49,7 +49,7 @@ endif()
 
 if(MSVC)
 	set(CMAKE_CXX_FLAGS
-		"${CMAKE_CXX_FLAGS} /Ob2 /Oi /O2 /permissive- /std:c++latest"
+		"${CMAKE_CXX_FLAGS} /EHsc /GR /Ob2 /Oi /O2 /permissive- /std:c++latest"
 	)
 else()
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")

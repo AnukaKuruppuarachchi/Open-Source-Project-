@@ -3,8 +3,7 @@
 #
 # Unless you are indeed releasing a binary, use Debug or RelWithDebInfo.
 
-cmake_minimum_required(VERSION 3.2)
-set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+cmake_minimum_required(VERSION 3.5)
 
 project(Hypersomnia)
 enable_language(C ASM)
@@ -1307,9 +1306,11 @@ endif()
 
 if(MSVC)
 	# Inline a lot. Default is /Ob1.
-	string(REPLACE "/Ob1" "/Ob2" CMAKE_CXX_FLAGS_RELWITHDEBINFO ${CMAKE_CXX_FLAGS_RELWITHDEBINFO})
+	if(CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+		string(REPLACE "/Ob1" "/Ob2" CMAKE_CXX_FLAGS_RELWITHDEBINFO ${CMAKE_CXX_FLAGS_RELWITHDEBINFO})
+	endif()
 	
-	set(HYPERSOMNIA_CXX_FLAGS "${HYPERSOMNIA_CXX_FLAGS} /std:c++latest /fp:strict /bigobj /permissive-")
+	set(HYPERSOMNIA_CXX_FLAGS "${HYPERSOMNIA_CXX_FLAGS} /EHsc /GR /std:c++latest /fp:strict /bigobj /permissive-")
 else()
 	set(HYPERSOMNIA_CXX_FLAGS "${HYPERSOMNIA_CXX_FLAGS} -std=c++20")
 endif()
@@ -1346,12 +1347,16 @@ endif()
 if (NOT USE_O3)
 	message("Forcing use of O2.")
 
-	string(REPLACE "O3" "O2" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
-	string(REPLACE "O3" "O2" CMAKE_C_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
+	if(CMAKE_CXX_FLAGS_RELEASE)
+		string(REPLACE "O3" "O2" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
+		string(REPLACE "O3" "O2" CMAKE_C_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
+	endif()
 else()
 	message("Forcing use of O3.")
-	string(REPLACE "O2" "O3" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
-	string(REPLACE "O2" "O3" CMAKE_C_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
+	if(CMAKE_CXX_FLAGS_RELEASE)
+		string(REPLACE "O2" "O3" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
+		string(REPLACE "O2" "O3" CMAKE_C_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
+	endif()
 endif()
 
 if (LINK_TIME_OPTIMIZATION)
@@ -1804,6 +1809,7 @@ if(BUILD_FREETYPE)
 
 	if (NOT (USE_SYSTEM_FREETYPE AND FREETYPE_FOUND))
 		message("Building Freetype (no harfbuzz/png/bzip2/brotli/zlib).")
+		set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 		add_subdirectory("${PROJECT_SOURCE_DIR}/src/3rdparty/freetype2")
 
 		if(ADD_MCMODEL_LARGE_FLAG)

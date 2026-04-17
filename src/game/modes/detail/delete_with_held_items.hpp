@@ -8,16 +8,21 @@ class arena_mode;
 void reverse_perform_deletions(const deletion_queue& deletions, cosmos& cosm);
 
 template <class H>
-static void delete_with_held_items_except(const entity_flavour_id drop_instead, const H handle) {
+static void delete_with_held_items_except(const entity_flavour_id drop_instead, const entity_flavour_id drop_instead_second, const H handle) {
 	if (handle) {
 		deletion_queue q;
 		q.push_back(handle.get_id());
 
 		handle.for_each_contained_item_recursive(
 			[&](const auto& contained) {
-				if (drop_instead.is_set()) {
-					if (drop_instead == entity_flavour_id(contained.get_flavour_id())) {
-						/* Don't delete the bomb!!! Drop it instead. */
+				if (drop_instead.is_set() || drop_instead_second.is_set()) {
+					const auto this_flavour = entity_flavour_id(contained.get_flavour_id());
+
+					if (
+						drop_instead == this_flavour
+						|| drop_instead_second == this_flavour
+					) {
+						/* Don't delete preserved objective items. Drop them instead. */
 
 						auto request = item_slot_transfer_request::drop(contained);
 						request.params.bypass_mounting_requirements = true;
@@ -44,5 +49,10 @@ static void delete_with_held_items_except(const entity_flavour_id drop_instead, 
 
 		reverse_perform_deletions(q, handle.get_cosmos());
 	}
+}
+
+template <class H>
+static void delete_with_held_items_except(const entity_flavour_id drop_instead, const H handle) {
+	::delete_with_held_items_except(drop_instead, entity_flavour_id(), handle);
 }
 

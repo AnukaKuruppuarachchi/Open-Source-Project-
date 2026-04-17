@@ -94,4 +94,8 @@ inline void setup_game_mode_defaults(
 	e.gun_game.warmup_equipment.resistance = warmup_eq;
 	e.gun_game.warmup_equipment.resistance.firearm = o[test_shootable_weapons::BILMER2000];
 	e.gun_game.warmup_equipment.metropolis = warmup_eq;
+
+	e.capture_the_flag.flag_item = o[test_shootable_weapons::BULWARK];
+	e.capture_the_flag.warmup_equipment = e.bomb_defusal.warmup_equipment;
+	e.capture_the_flag.round_start_equipment = e.bomb_defusal.round_start_equipment;
 }

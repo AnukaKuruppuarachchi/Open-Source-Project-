@@ -27,6 +27,7 @@
 #include "game/detail/sentience/sentience_getters.h"
 #include "game/detail/inventory/perform_wielding.hpp"
 #include "game/detail/inventory/wielding_setup.hpp"
+#include "game/detail/inventory/perform_transfer.h"
 #include "game/detail/snap_interpolation_to_logical.h"
 
 #include "game/cosmos/just_create_entity_functional.h"
@@ -44,6 +45,7 @@
 #include "augs/misc/date_time.h"
 #include "game/modes/ai/arena_mode_ai.h"
 #include "game/messages/collected_message.h"
+#include "game/messages/performed_transfer_message.h"
 #include "game/modes/ai/tasks/ai_waypoint_helpers.hpp"
 #include "game/modes/ai/intents/calc_assigned_waypoint.hpp"
 #include "game/modes/ai/behaviors/ai_behavior_patrol_process.hpp"
@@ -63,7 +65,95 @@ int arena_mode_player_stats::calc_score() const {
 		+ bomb_plants * 2
 		+ bomb_explosions * 2
 		+ bomb_defuses * 4
+		+ captures * 5
 	;
+}
+
+static bool is_inside_ctf_base(
+	const cosmos& cosm,
+	const capture_the_flag_rules& ctf_rules,
+	const faction_type faction,
+	const vec2 world_pos
+) {
+	const auto desired_letter = ctf_rules.get_base_letter(faction);
+	bool is_inside = false;
+
+	cosm.for_each_having<invariants::area_marker>([&](const auto& typed_area) {
+		const auto& marker_inv = typed_area.template get<invariants::area_marker>();
+
+		if (!::is_bombsite(marker_inv.type)) {
+			return;
+		}
+
+		if (const auto marker_comp = typed_area.template find<components::marker>()) {
+			if (marker_comp->letter != desired_letter) {
+				return;
+			}
+		}
+		else {
+			return;
+		}
+
+		if (const auto aabb = typed_area.find_aabb()) {
+			if (aabb->hover(world_pos)) {
+				is_inside = true;
+			}
+		}
+	});
+
+	return is_inside;
+}
+
+static std::optional<vec2> find_ctf_base_position(
+	const cosmos& cosm,
+	const capture_the_flag_rules& ctf_rules,
+	const faction_type faction
+) {
+	const auto desired_letter = ctf_rules.get_base_letter(faction);
+
+	std::optional<vec2> result;
+
+	cosm.for_each_having<invariants::area_marker>([&](const auto& typed_area) {
+		if (result.has_value()) {
+			return;
+		}
+
+		const auto& marker_inv = typed_area.template get<invariants::area_marker>();
+
+		if (!::is_bombsite(marker_inv.type)) {
+			return;
+		}
+
+		if (const auto marker_comp = typed_area.template find<components::marker>()) {
+			if (marker_comp->letter != desired_letter) {
+				return;
+			}
+		}
+		else {
+			return;
+		}
+
+		if (const auto aabb = typed_area.find_aabb()) {
+			result = aabb->get_center();
+		}
+	});
+
+	return result;
+}
+
+template <class H>
+static void zero_flag_ammo(const H& root_item) {
+	if (root_item.template get<invariants::item>().stackable) {
+		root_item.set_charges(0);
+	}
+
+	root_item.for_each_contained_item_recursive([&](const auto& contained) {
+		if (contained.template get<invariants::item>().stackable) {
+			contained.set_charges(0);
+		}
+
+		return recursive_callback_result::CONTINUE_AND_RECURSE;
+	});
 }
 
 bool arena_mode_player::operator<(const arena_mode_player& b) const {
@@ -510,7 +600,14 @@ void arena_mode::erase_player(input_type in, const logic_step step, const mode_p
 		}
 
 		const auto controlled_character_id = entry->controlled_character_id;
-		::delete_with_held_items_except(in.rules.bomb_flavour, in.cosm[controlled_character_id]);
+
+		auto extra_drop_flavour = entity_flavour_id();
+
+		if (const auto ctf_rules = std::get_if<capture_the_flag_rules>(&in.rules.subrules)) {
+			extra_drop_flavour = entity_flavour_id(ctf_rules->flag_flavour);
+		}
+
+		::delete_with_held_items_except(in.rules.bomb_flavour, extra_drop_flavour, in.cosm[controlled_character_id]);
 
 		const auto previous_faction = entry->get_faction();
 		const auto free_color = entry->assigned_color;
@@ -1154,6 +1251,22 @@ void arena_mode::setup_round(
 			if (!give_bomb_to_random_player(in, step)) {
 				spawn_bomb_near_players(in);
 			}
+		}
+
+		if (const auto ctf_rules = std::get_if<capture_the_flag_rules>(&in.rules.subrules)) {
+			for_each_faction([&](const faction_type flag_owner) {
+				auto& flag_state = current_round.ctf_flags[flag_owner];
+
+				if (const auto base_pos = ::find_ctf_base_position(cosm, *ctf_rules, flag_owner)) {
+					auto flag_entity = just_create_entity(access, cosm, ctf_rules->flag_flavour);
+
+					if (flag_entity) {
+						flag_entity.set_logic_transform(transformr(*base_pos));
+						::zero_flag_ammo(flag_entity);
+						flag_state.flag_entity = flag_entity.get_id();
+					}
+				}
+			});
 		}
 	}
 
@@ -1832,7 +1945,17 @@ void arena_mode::count_win(const input_type in, const const_logic_step step, con
 		give_monetary_award(in, player_id, {}, faction == winner ? winner_award : loser_award);
 	}
 
-	if (is_halfway_round(in) || is_final_round(in)) {
+	const bool ctf_match_finished = std::visit([&](const auto& subrules) {
+		using S = std::decay_t<decltype(subrules)>;
+
+		if constexpr(std::is_same_v<S, capture_the_flag_rules>) {
+			return factions[winner].score >= subrules.score_to_win;
+		}
+
+		return false;
+	}, in.rules.subrules);
+
+	if (ctf_match_finished || is_halfway_round(in) || is_final_round(in)) {
 		trigger_match_summary(in, step);
 	}
 }
@@ -3916,6 +4039,176 @@ void arena_mode::mode_post_solve(const input_type in, const mode_entropy& entrop
 				}
 			}
 		}
+
+		if (const auto ctf_rules = std::get_if<capture_the_flag_rules>(&in.rules.subrules)) {
+			const auto seconds_passed = get_seconds_passed_in_cosmos(in);
+			bool ctf_round_finished = false;
+
+			auto respawn_flag_at_base = [&](const faction_type flag_owner, ctf_flag_runtime_state& flag) {
+				if (const auto base_pos = ::find_ctf_base_position(cosm, *ctf_rules, flag_owner)) {
+					if (auto existing_flag = cosm[flag.flag_entity]) {
+						existing_flag.set_logic_transform(transformr(*base_pos));
+						::zero_flag_ammo(existing_flag);
+						flag.state = ctf_flag_state::AT_BASE;
+						flag.carrier = mode_player_id::dead();
+						flag.dropped_at_secs = -1.0f;
+						return;
+					}
+
+					auto flag_entity = just_create_entity(access, cosm, ctf_rules->flag_flavour);
+
+					if (flag_entity) {
+						flag_entity.set_logic_transform(transformr(*base_pos));
+						::zero_flag_ammo(flag_entity);
+						flag.flag_entity = flag_entity.get_id();
+						flag.state = ctf_flag_state::AT_BASE;
+						flag.carrier = mode_player_id::dead();
+						flag.dropped_at_secs = -1.0f;
+					}
+				}
+			};
+
+			for_each_faction([&](const faction_type flag_owner) {
+				auto& flag = current_round.ctf_flags[flag_owner];
+
+				if (flag.state == ctf_flag_state::AT_BASE) {
+					if (!cosm[flag.flag_entity]) {
+						respawn_flag_at_base(flag_owner, flag);
+					}
+				}
+
+				if (flag.state == ctf_flag_state::CARRIED) {
+					on_player_handle(cosm, flag.carrier, [&](const auto& carrier_handle) {
+						if constexpr(!is_nullopt_v<decltype(carrier_handle)>) {
+							const auto& sentience = carrier_handle.template get<components::sentience>();
+
+							if (!sentience.is_conscious()) {
+								flag.carrier = mode_player_id::dead();
+							}
+						}
+						else {
+							flag.carrier = mode_player_id::dead();
+						}
+					});
+
+					if (!flag.carrier.is_set()) {
+						flag.state = ctf_flag_state::DROPPED;
+						flag.dropped_at_secs = seconds_passed;
+						respawn_flag_at_base(flag_owner, flag);
+					}
+				}
+
+				if (flag.state == ctf_flag_state::DROPPED) {
+					if (!cosm[flag.flag_entity]) {
+						respawn_flag_at_base(flag_owner, flag);
+						return;
+					}
+
+					respawn_flag_at_base(flag_owner, flag);
+				}
+			});
+
+			{
+				const auto& transfer_events = step.get_queue<messages::performed_transfer_message>();
+
+				for (const auto& e : transfer_events) {
+					if (!e.is_successful()) {
+						continue;
+					}
+
+					for_each_faction([&](const faction_type flag_owner) {
+						auto& flag = current_round.ctf_flags[flag_owner];
+
+						if (flag.flag_entity != e.item) {
+							return;
+						}
+
+						if (!e.result.is_pickup()) {
+							if (e.result.is_drop()) {
+								flag.state = ctf_flag_state::DROPPED;
+								flag.carrier = mode_player_id::dead();
+								flag.dropped_at_secs = seconds_passed;
+								respawn_flag_at_base(flag_owner, flag);
+							}
+
+							return;
+						}
+
+						if (const auto picker = lookup(e.target_root); picker.is_set()) {
+							if (get_player_faction(picker) == flag_owner) {
+								if (const auto held_flag = cosm[e.item]) {
+									auto request = item_slot_transfer_request::drop(held_flag);
+									request.params.bypass_mounting_requirements = true;
+									perform_transfer_no_step(request, cosm);
+								}
+
+								flag.state = ctf_flag_state::DROPPED;
+								flag.carrier = mode_player_id::dead();
+								flag.dropped_at_secs = seconds_passed;
+								respawn_flag_at_base(flag_owner, flag);
+								return;
+							}
+
+							flag.state = ctf_flag_state::CARRIED;
+							flag.carrier = picker;
+							flag.dropped_at_secs = -1.0f;
+						}
+					});
+				}
+			}
+
+			for (const auto& it : players) {
+				if (ctf_round_finished) {
+					break;
+				}
+
+				const auto player_id = it.first;
+				const auto faction = it.second.get_faction();
+
+				if (faction == faction_type::SPECTATOR) {
+					continue;
+				}
+
+				const auto opposing = get_opposing_faction(in, faction);
+
+				on_player_handle(cosm, player_id, [&](const auto& player_handle) {
+					if constexpr(!is_nullopt_v<decltype(player_handle)>) {
+						const auto& sentience = player_handle.template get<components::sentience>();
+
+						if (!sentience.is_conscious()) {
+							return;
+						}
+
+						const auto pos = player_handle.get_logic_transform().pos;
+						auto& enemy_flag = current_round.ctf_flags[opposing];
+						auto& own_flag = current_round.ctf_flags[faction];
+
+						if (
+							enemy_flag.state == ctf_flag_state::CARRIED
+							&& enemy_flag.carrier == player_id
+						) {
+							const bool own_flag_home = own_flag.state == ctf_flag_state::AT_BASE && cosm[own_flag.flag_entity];
+							const bool carrier_at_own_base = ::is_inside_ctf_base(cosm, *ctf_rules, faction, pos);
+
+							if (own_flag_home && carrier_at_own_base) {
+								if (const auto enemy_flag_entity = cosm[enemy_flag.flag_entity]) {
+									step.queue_deletion_of(enemy_flag_entity, "CTF capture scored");
+								}
+
+								enemy_flag = {};
+
+								if (auto s = stats_of(player_id)) {
+									s->captures += 1;
+								}
+
+								standard_victory(in, step, faction);
+								ctf_round_finished = true;
+							}
+						}
+					}
+				});
+			}
+		}
 	}
 
 	// At the end of mode_post_solve, reset bot sprint/dash flags
@@ -3949,7 +4242,13 @@ void arena_mode::respawn_the_dead(const input_type in, const logic_step step, co
 					round_transferred_player transfer;
 					transfer.movement = player_handle.template get<components::movement>().flags;
 
-					::delete_with_held_items_except(in.rules.bomb_flavour, player_handle);
+					auto extra_drop_flavour = entity_flavour_id();
+
+					if (const auto ctf_rules = std::get_if<capture_the_flag_rules>(&in.rules.subrules)) {
+						extra_drop_flavour = entity_flavour_id(ctf_rules->flag_flavour);
+					}
+
+					::delete_with_held_items_except(in.rules.bomb_flavour, extra_drop_flavour, player_handle);
 
 					messages::changed_identities_message changed_identities;
 					create_character_for_player(in, step, id, changed_identities, &transfer);

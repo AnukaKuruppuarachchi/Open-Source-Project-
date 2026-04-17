@@ -114,6 +114,38 @@ struct editor_gun_game_mode {
 	}
 };
 
+struct editor_capture_the_flag_mode {
+	using subrules_type = capture_the_flag_rules;
+	static constexpr bool json_serialize_in_parent = true;
+
+	// GEN INTROSPECTOR struct editor_capture_the_flag_mode
+	uint32_t score_to_win = 3;
+	uint8_t default_bot_quota = 10;
+	editor_typed_resource_id<editor_firearm_resource> flag_item;
+
+	uint32_t warmup_time = 16;
+	uint32_t freeze_time = 5;
+	uint32_t round_time = 5 * 60;
+	real32 round_end_time = 5.0f;
+
+	uint32_t respawn_after_ms = 3000;
+	uint32_t spawn_protection_ms = 1500;
+
+	per_actual_faction<editor_requested_equipment> warmup_equipment;
+	per_actual_faction<editor_requested_equipment> round_start_equipment;
+	// END GEN INTROSPECTOR
+
+	bool operator==(const editor_capture_the_flag_mode&) const = default;
+
+	static auto get_identifier() {
+		return "capture_the_flag";
+	}
+
+	static auto get_display_name() {
+		return subrules_type::get_name();
+	}
+};
+
 struct editor_quick_test_mode {
 	static constexpr bool json_serialize_in_parent = true;
 
@@ -141,6 +173,7 @@ struct editor_game_mode_resource_editable {
 	editor_quick_test_mode quick_test;
 	editor_bomb_defusal_mode bomb_defusal;
 	editor_gun_game_mode gun_game;
+	editor_capture_the_flag_mode capture_the_flag;
 	// END GEN INTROSPECTOR
 
 	bool operator==(const editor_game_mode_resource_editable&) const = default;
@@ -149,7 +182,8 @@ struct editor_game_mode_resource_editable {
 using editor_all_game_modes = type_list<
 	editor_quick_test_mode,
 	editor_bomb_defusal_mode,
-	editor_gun_game_mode
+	editor_gun_game_mode,
+	editor_capture_the_flag_mode
 >;
 
 using editor_game_mode_id = type_in_list_id<editor_all_game_modes>;

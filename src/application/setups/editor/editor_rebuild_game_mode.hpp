@@ -69,7 +69,7 @@ auto to_game_requested_equipment(
 using default_rulesets_tuple = std::tuple<test_mode_ruleset, arena_mode_ruleset>;
 
 template <class T>
-constexpr bool is_arena_submode_v = is_one_of_v<T, editor_bomb_defusal_mode, editor_gun_game_mode>;
+constexpr bool is_arena_submode_v = is_one_of_v<T, editor_bomb_defusal_mode, editor_gun_game_mode, editor_capture_the_flag_mode>;
 
 template <class F>
 auto setup_ruleset_from_editor_mode(
@@ -142,6 +142,7 @@ auto setup_ruleset_from_editor_mode(
 
 	auto make_arena_mode_rules = [&]<typename I>(const I& vars) {
 		constexpr bool is_gun_game_v = std::is_same_v<I, editor_gun_game_mode>;
+		constexpr bool is_ctf_v = std::is_same_v<I, editor_capture_the_flag_mode>;
 
 		using T = arena_mode;
 
@@ -154,7 +155,13 @@ auto setup_ruleset_from_editor_mode(
 		rules.round_end_secs = vars.round_end_time;
 		rules.respawn_after_ms = vars.respawn_after_ms;
 		rules.spawn_protection_ms = vars.spawn_protection_ms;
-		rules.max_rounds = (std::max(2u, vars.max_team_score) - 1) * 2;
+
+		if constexpr(is_ctf_v) {
+			rules.max_rounds = vars.score_to_win * 20;
+		}
+		else {
+			rules.max_rounds = (std::max(2u, vars.max_team_score) - 1) * 2;
+		}
 
 		using S = typename I::subrules_type;
 		S subrules;
@@ -193,6 +200,11 @@ auto setup_ruleset_from_editor_mode(
 
 		if constexpr(subrules.has_economy()) {
 			rules.buy_secs_after_freeze = vars.buy_time;
+		}
+
+		if constexpr(is_ctf_v) {
+			subrules.score_to_win = vars.score_to_win;
+			subrules.flag_flavour = to_flavour(vars.flag_item);
 		}
 
 		if constexpr(is_gun_game_v) {
@@ -244,6 +256,9 @@ auto setup_ruleset_from_editor_mode(
 		}
 		else if constexpr(std::is_same_v<I, editor_bomb_defusal_mode>) {
 			make_arena_mode_rules(game_mode.editable.bomb_defusal);
+		}
+		else if constexpr(std::is_same_v<I, editor_capture_the_flag_mode>) {
+			make_arena_mode_rules(game_mode.editable.capture_the_flag);
 		}
 		else {
 			static_assert(always_false_v<I>, "Non-exhaustive if constexpr");

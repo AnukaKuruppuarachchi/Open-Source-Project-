@@ -138,6 +138,7 @@ struct arena_mode_player_stats {
 	int bomb_explosions = 0;
 
 	int bomb_defuses = 0;
+	int captures = 0;
 
 	int level = 0;
 
@@ -149,6 +150,24 @@ struct arena_mode_player_stats {
 	// END GEN INTROSPECTOR
 
 	int calc_score() const;
+};
+
+enum class ctf_flag_state {
+	// GEN INTROSPECTOR enum class ctf_flag_state
+	AT_BASE,
+	CARRIED,
+	DROPPED,
+	COUNT
+	// END GEN INTROSPECTOR
+};
+
+struct ctf_flag_runtime_state {
+	// GEN INTROSPECTOR struct ctf_flag_runtime_state
+	ctf_flag_state state = ctf_flag_state::AT_BASE;
+	mode_player_id carrier = mode_player_id::dead();
+	entity_id flag_entity;
+	float dropped_at_secs = -1.0f;
+	// END GEN INTROSPECTOR
 };
 
 struct server_ranked_vars;
@@ -224,6 +243,7 @@ struct arena_mode_round_state {
 	arena_mode_win last_win;
 	arena_mode_knockouts_vector knockouts;
 	mode_player_id bomb_planter;
+	per_actual_faction<ctf_flag_runtime_state> ctf_flags;
 	// END GEN INTROSPECTOR
 };
 

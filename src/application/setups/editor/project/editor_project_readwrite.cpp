@@ -1445,6 +1445,7 @@ namespace editor_project_readwrite {
 			register_if_missing(editor_quick_test_mode());
 			register_if_missing(editor_bomb_defusal_mode());
 			register_if_missing(editor_gun_game_mode());
+			register_if_missing(editor_capture_the_flag_mode());
 		};
 
 		auto unstringify_resource_id = [&]<typename R>(editor_typed_resource_id<R>& typed_id) {

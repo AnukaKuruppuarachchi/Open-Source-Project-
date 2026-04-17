@@ -2663,6 +2663,28 @@ EDIT_FUNCTION(
 
 			ImGui::Separator();
 		}
+		else if constexpr(std::is_same_v<I, editor_capture_the_flag_mode>) {
+			MULTIPROPERTY("Score to win", capture_the_flag.score_to_win);
+			MULTIPROPERTY("Flag item", capture_the_flag.flag_item);
+
+			MULTIPROPERTY("Default bot quota", capture_the_flag.default_bot_quota);
+
+			MULTIPROPERTY("Warmup time", capture_the_flag.warmup_time);
+			MULTIPROPERTY("Freeze time", capture_the_flag.freeze_time);
+			MULTIPROPERTY("Round time", capture_the_flag.round_time);
+			MULTIPROPERTY("Round end time", capture_the_flag.round_end_time);
+
+			MULTIPROPERTY("Respawn after (ms)", capture_the_flag.respawn_after_ms);
+			MULTIPROPERTY("Spawn protection (ms)", capture_the_flag.spawn_protection_ms);
+
+			ImGui::Separator();
+
+			FACTION_EQUIPMENT_PROPERTY("Warmup equipment", capture_the_flag.warmup_equipment);
+
+			ImGui::Separator();
+
+			FACTION_EQUIPMENT_PROPERTY("Round start equipment", capture_the_flag.round_start_equipment);
+		}
 		else {
 			static_assert(always_false_v<I>, "Non-exhaustive if constexpr");
 		}
