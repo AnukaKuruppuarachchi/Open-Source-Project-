@@ -87,7 +87,7 @@ Future improvements may include automated tests and continuous integration.
 
 # Contributing
 
-Contributions are welcome.
+Contributions are welcome.  
 
 To contribute:
 
@@ -105,6 +105,9 @@ git push origin feature/new-ctf-feature
 ```
 
 All pull requests will be reviewed before merging.
+
+Please read our [Contributing Guidelines](./CONTRIBUTING.md) for full details on how to contribute. 
+
 
 ---
 
