@@ -1,6 +1,6 @@
 # Support
 
-If you need support, here are some useful links:
+If you need support with any part of this project, here are some useful links:
 
 ## Project Documentation
 - [README](./README.md)
