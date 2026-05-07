@@ -21,4 +21,4 @@ High-quality contributions usually include:
 - Consistent participation
 - Helpful suggestions that improve the project overall
 
-Want to become a maintainer but haven’t heard from us? Email  OSP@email.com. 
+Want to become a maintainer but haven’t heard from us? Email  opensourceproject4@outlook.ie. 
