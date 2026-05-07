@@ -1,7 +1,7 @@
 ## Reporting a Security Issue
 
 If you discover any security related issues, please contact  
-OSP@email.com. 
+opensourceproject4@outlook.ie. 
 
 ***Do not open a public GitHub issue for security vulnerabilities.***
 
