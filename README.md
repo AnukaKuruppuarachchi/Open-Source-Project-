@@ -134,6 +134,19 @@ See the `LICENSE` file for full details.
 
 ---
 
+
+## Documentation
+
+- [Gameplay Guide](Docs/GAMEPLAY.md)
+- [Installation Guide](Docs/INSTALLATION.md)
+- [Roadmap](Docs/ROADMAP.md)
+- [Support](Docs/SUPPORT.md)
+- [Project Governance](Docs/GOVERNANCE.md)
+
+
+
+
+
 # Acknowledgements
 
 This project builds upon the open-source Hypersomnia engine and its contributors.
