@@ -1,0 +1,120 @@
+name: Windows Build
+
+on:
+  push:
+    branches:
+      - master
+    tags-ignore: [ '*' ]
+
+jobs:
+  build:
+    if: "!contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[ds only]') && !contains(github.event.head_commit.message, '[lin only]') && !contains(github.event.head_commit.message, '[mac only]')"
+
+    runs-on: windows-2025
+    env:
+      HYPERSOMNIA_BUILD_TYPE: Release
+
+    steps:
+    - name: Checkout repository with submodules
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 0
+
+    - name: Display OpenSSL directory info
+      run: |
+        dir "C:\Program Files\OpenSSL"
+        dir /S "C:\Program Files\OpenSSL\lib"
+      shell: cmd
+
+    - name: Generate Visual Studio solution files
+      run: |
+        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+        echo "where clang-cl:"
+        where clang-cl
+        echo "clang-cl --version"
+        clang-cl --version
+        echo "Now building"
+        mkdir sln
+        cd sln
+        cmake -G "Visual Studio 17 2022" -A x64 -T ClangCL ^
+          -DLINK_STEAM_INTEGRATION=0 ^
+          -DBLAKE_PORTABLE=1 ^
+          -DARCHITECTURE="x64" ^
+          -DCMAKE_BUILD_TYPE=%HYPERSOMNIA_BUILD_TYPE% ^
+          -DOUTPUT_TO_HYPERSOMNIA_FOLDER=1 ^
+          -DOPENSSL_ROOT_DIR="C:\Program Files\OpenSSL" ^
+          ..
+      shell: cmd
+
+    - name: Upload Visual Studio solution artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Hypersomnia-sln
+        path: sln
+        retention-days: 90
+
+#   - name: Build Hypersomnia.sln with MSBuild
+#     run: |
+#       call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+#       msbuild sln/Hypersomnia.sln /p:Configuration=Release /p:Platform=x64 /m
+#     shell: cmd
+
+#   - name: Upload Visual Studio build artifact
+#     uses: actions/upload-artifact@v4
+#     with:
+#       name: Hypersomnia-sln-exe
+#       path: hypersomnia
+
+    - name: Prepare folders for tools
+      run: |
+        mkdir "${{ github.workspace }}\tools"
+        mkdir "${{ github.workspace }}\tools\deps"
+      shell: cmd
+
+    - name: Setup Ninja
+      run: |
+        cd "${{ github.workspace }}\tools\deps"
+        $ninjaUrl = "https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-win.zip"
+        Invoke-WebRequest -Uri $ninjaUrl -OutFile ninja.zip
+        7z x ninja.zip -o"${{ github.workspace }}\tools\deps\ninja" | Out-Null
+        echo "${{ github.workspace }}\tools\deps\ninja" >> $env:GITHUB_PATH
+        ninja --version
+      shell: pwsh
+
+    - name: Install LLVM
+      run: |
+        Invoke-WebRequest -Uri https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/LLVM-18.1.8-win64.exe -OutFile llvm-installer.exe
+        Start-Process -FilePath llvm-installer.exe -ArgumentList "/S", "/D=C:\Program Files\LLVM" -Wait
+      shell: pwsh
+
+    - name: Build
+      run: |
+        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+        cd cmake\steam_integration
+        mkdir build
+        cd build
+        cmake -DBUILD_STEAM=0 -DCMAKE_BUILD_TYPE=Release -G Ninja ..
+        ninja install
+        cd ..\..\..\
+        dir
+        mkdir build
+        cd build
+        dir
+        cmake -G Ninja -DLINK_STEAM_INTEGRATION=1 -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DCMAKE_LINKER=lld-link -DARCHITECTURE="x64" -DCMAKE_BUILD_TYPE=%HYPERSOMNIA_BUILD_TYPE% -DOUTPUT_TO_HYPERSOMNIA_FOLDER=1 -DOPENSSL_ROOT_DIR="C:\Program Files\OpenSSL" ..
+        ninja
+      shell: cmd
+
+    - name: Run tests and package
+      run: |
+        ../cmake/test_pack_upload.ps1 -configuration $env:HYPERSOMNIA_BUILD_TYPE -console_mode 0
+      working-directory: hypersomnia
+      shell: pwsh
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: Windows-binaries
+        path: |
+          Hypersomnia-for-Windows.exe
+          Hypersomnia-for-Windows.zip
+          hypersomnia/release_notes.txt

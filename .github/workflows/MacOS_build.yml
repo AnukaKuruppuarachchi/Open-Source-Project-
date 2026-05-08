@@ -1,0 +1,50 @@
+name: MacOS build
+
+on:
+  push:
+    branches: [ master ]
+    tags-ignore: [ '*' ]
+  pull_request:
+    branches: [ master ]
+
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: "!contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[ds only]') && !contains(github.event.head_commit.message, '[lin only]') && !contains(github.event.head_commit.message, '[win only]')"
+    runs-on: macos-15
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
+        fetch-depth: 0
+    - name: Install p7zip
+      run: brew install p7zip
+    - name: Install ImageMagick for create-dmg
+      run: brew install graphicsmagick imagemagick
+    - name: Install create-dmg
+      run: brew install create-dmg
+    - name: Install ninja
+      run: brew install ninja
+    - name: Install GLFW
+      run: brew install glfw
+    - name: Install sodium
+      run: brew install libsodium
+    - name: Build Non-Steam libsteam_integration
+      run: . cmake/build_nonsteam_integration.sh
+    - name: Generate CMake files
+      run: export LDFLAGS="-framework Cocoa -framework IOKit -framework CoreFoundation" && cmake/build.sh Release x64 '-DLINK_STEAM_INTEGRATION=1 -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl'
+    - name: Build
+      run: pushd build/current && ninja && ls -alh && otool -L Hypersomnia && otool -l Hypersomnia && ninja tests -k 0 && popd
+    - name: Generate downloadable archives
+      run: cmake/generate_archives.sh MacOS
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: MacOS-binaries
+        path: |
+          Hypersomnia-for-*
+          hypersomnia/release_notes.txt

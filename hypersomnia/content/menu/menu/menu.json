@@ -1,0 +1,2324 @@
+{
+    "meta": {
+        "name": "menu",
+        "version_timestamp": "2025-08-10 16:28:08.350301 UTC"
+    },
+    "about": {
+        "author": "Pythagoras",
+        "short_description": "Underwater biotech lab is under attack.\nDon't let them lay hands on any expensive equipment."
+    },
+    "settings": {
+        "default_server_mode": "quick_test",
+        "ambient_light_color": [0, 67, 90, 255],
+        "warmup_theme": {
+            "id": "arabesque"
+        }
+    },
+    "playtesting": {
+        "mode": "quick_test"
+    },
+    "game_modes": {
+        "bomb_defusal": {
+            "warmup_time": 81,
+            "round_time": 100,
+            "warmup_equipment": {
+                "resistance": {
+                    "firearm": "bilmer2000"
+                }
+            }
+        },
+        "gun_game": {
+            "warmup_time": 81
+        },
+        "quick_test": {
+            "equipment": {
+                "metropolis": {
+                    "firearm": "covert",
+                    "melee": "assault_rattle",
+                    "electric_armor": true,
+                    "haste_time": 600.0
+                }
+            }
+        }
+    },
+    "external_resources": [
+        {
+            "path": "gfx/aquarium/aquarium_pump.png",
+            "file_hash": "3eac2e64cd61240742e07dc819983893565b4140a739bae1178f18c3ea2ff651",
+            "id": "@aquarium_pump",
+            "domain": "PHYSICAL",
+            "size": [244, 119],
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_physical": {
+                "is_static": true,
+                "density": 100.0,
+                "cover_background_neons": false
+            }
+        },
+        {
+            "path": "gfx/aquarium/generatorconnector.png",
+            "file_hash": "e4765400e269e4408a2ffdb3331e1be6ff5b26c3617dddd875954535f3fc30b2",
+            "id": "@generatorconnector",
+            "neon_map": {
+                "light_colors": [[48, 96, 130, 255], [136, 39, 39, 255]
+                ]
+            },
+            "size": [26, 35],
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_nonphysical": {
+                "custom_footstep": {
+                    "sound": {
+                        "gain": 0.6000000238418579,
+                        "pitch": 0.8999999761581421
+                    }
+                }
+            }
+        },
+        {
+            "path": "gfx/aquarium/generatorconsole.png",
+            "file_hash": "03b463d03c84bd6ec1a7f4a84a1c33cde0787d1e46d95345b5660aff09a451e3",
+            "id": "@generatorconsole",
+            "size": [54, 192],
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_nonphysical": {
+                "custom_footstep": {
+                    "sound": {
+                        "gain": 0.6000000238418579,
+                        "pitch": 0.8999999761581421
+                    },
+                    "walking_speed": 0.5
+                }
+            }
+        },
+        {
+            "path": "gfx/aquarium/generatorconsolelight.png",
+            "file_hash": "744629c9c1768e769b0ebec443ddba30c25d6a056c3530b734a9f17abf5459e1",
+            "id": "@generatorconsolelight",
+            "neon_map": {
+                "light_colors": [[255, 255, 255, 255]
+                ]
+            },
+            "neon_color": [0, 255, 255, 255],
+            "size": [23, 174],
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_nonphysical": {
+                "custom_footstep": {
+                    "sound": {
+                        "gain": 0.6000000238418579,
+                        "pitch": 0.8999999761581421
+                    }
+                }
+            }
+        },
+        {
+            "path": "gfx/aquarium/generatorrightcab.png",
+            "file_hash": "3db5ec3001e9fc76e373761c8669efbef9bb61d28c44c1b9b30861d11573c7b9",
+            "id": "@generatorrightcab",
+            "neon_map": {
+                "standard_deviation": 7.0,
+                "amplification": 80.0,
+                "light_colors": [[153, 229, 80, 255], [206, 79, 0, 255], [251, 242, 54, 255], [144, 73, 25, 255], [55, 148, 110, 255], [160, 155, 35, 255], [160, 155, 35, 255]
+                ]
+            },
+            "size": [162, 178],
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_nonphysical": {
+                "custom_footstep": {
+                    "sound": {
+                        "gain": 0.6000000238418579,
+                        "pitch": 0.8999999761581421
+                    },
+                    "walking_speed": 0.699999988079071
+                }
+            }
+        },
+        {
+            "path": "gfx/blanks/blank7.png",
+            "file_hash": "9e090662f4d3ea91946d4464ede66453eba1975716c16b877453c8061040c438",
+            "id": "@blank7",
+            "color": [129, 129, 129, 0],
+            "neon_color": [129, 129, 129, 255],
+            "size": [128, 32],
+            "stretch_when_resized": true,
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_nonphysical": {
+                "custom_footstep": {
+                    "sound": {
+                        "pitch": 1.100000023841858,
+                        "id": "footstep_air_duct"
+                    }
+                }
+            }
+        },
+        {
+            "path": "gfx/blanks/blank8.png",
+            "file_hash": "9e090662f4d3ea91946d4464ede66453eba1975716c16b877453c8061040c438",
+            "id": "@blank8",
+            "color": [0, 67, 90, 0],
+            "size": [1, 1],
+            "stretch_when_resized": true,
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_nonphysical": {
+                "cover_background_neons": true,
+                "OFF_custom_footstep": {
+                    "sound": {
+                        "gain": 0.6000000238418579,
+                        "pitch": 0.8999999761581421
+                    }
+                }
+            }
+        },
+        {
+            "path": "gfx/blanks/blank9.png",
+            "file_hash": "9e090662f4d3ea91946d4464ede66453eba1975716c16b877453c8061040c438",
+            "id": "@blank9",
+            "color": [0, 0, 0, 255],
+            "neon_color": [255, 255, 255, 106],
+            "size": [1, 1],
+            "stretch_when_resized": true,
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_nonphysical": {
+                "custom_footstep": {
+                    "sound": {
+                        "gain": 0.6000000238418579,
+                        "pitch": 0.8999999761581421
+                    }
+                }
+            }
+        },
+        {
+            "path": "gfx/blanks/blank10.png",
+            "file_hash": "9e090662f4d3ea91946d4464ede66453eba1975716c16b877453c8061040c438",
+            "id": "@blank10",
+            "domain": "PHYSICAL",
+            "color": [0, 255, 255, 255],
+            "neon_color": [255, 255, 254, 0],
+            "size": [1, 1],
+            "stretch_when_resized": true,
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_physical": {
+                "is_static": true,
+                "is_see_through": true,
+                "is_throw_through": true,
+                "density": 100.0,
+                "cover_background_neons": false
+            }
+        },
+        {
+            "path": "gfx/blanks/blank11.png",
+            "file_hash": "9e090662f4d3ea91946d4464ede66453eba1975716c16b877453c8061040c438",
+            "id": "@blank11",
+            "domain": "PHYSICAL",
+            "color": [175, 175, 175, 0],
+            "neon_color": [255, 254, 254, 255],
+            "size": [1, 1],
+            "stretch_when_resized": true,
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_physical": {
+                "is_static": true,
+                "density": 100.0,
+                "material": "vent",
+                "cover_background_neons": false,
+                "illuminate_like_wall": false
+            }
+        },
+        {
+            "path": "gfx/blanks/blank12.png",
+            "file_hash": "9e090662f4d3ea91946d4464ede66453eba1975716c16b877453c8061040c438",
+            "id": "@blank12",
+            "color": [129, 129, 129, 0],
+            "neon_color": [129, 129, 129, 255],
+            "size": [1, 1],
+            "stretch_when_resized": true,
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_nonphysical": {
+                "custom_footstep": {
+                    "sound": {
+                        "pitch": 0.8500000238418579,
+                        "id": "footstep_fence"
+                    }
+                }
+            }
+        },
+        {
+            "path": "gfx/decorations/electronics/noweustrojstwo.png",
+            "file_hash": "618d2981ec1e77bf151303b1d3f2ece06944c891296b5b5d2d0f3a91bf92acfb",
+            "id": "@noweustrojstwo",
+            "domain": "PHYSICAL",
+            "neon_map": {
+                "light_colors": [[155, 203, 63, 255], [126, 188, 229, 255], [193, 73, 147, 255], [121, 148, 172, 255], [45, 87, 125, 255]
+                ]
+            },
+            "size": [212, 196],
+            "stretch_when_resized": true,
+            "color_wave_speed": 0.05000000074505806,
+            "OFF_rotate_continuously_degrees_per_sec": 197.0,
+            "as_physical": {
+                "is_static": true,
+                "density": 5.5,
+                "bounciness": 0.800000011920929,
+                "custom_shape": {
+                    "source_polygon": [[-105.0, -59.0], [-87.0, -98.0], [-37.0, -98.0], [-2.0, -77.0], [52.0, -63.0], [59.0, -67.0], [75.0, -68.0], [105.0, -38.0], [105.0, 38.0], [75.0, 68.0], [60.0, 68.0], [53.0, 64.0], [-1.0, 78.0], [-36.0, 97.0], [-86.0, 97.0], [-106.0, 58.0]
+                    ],
+                    "convex_partition": [
+                        15,
+                        0,
+                        1,
+                        2,
+                        3,
+                        12,
+                        13,
+                        14,
+                        15,
+                        12,
+                        3,
+                        4,
+                        11,
+                        12,
+                        11,
+                        4,
+                        5,
+                        6,
+                        7,
+                        8,
+                        9,
+                        10,
+                        11
+                    ]
+                }
+            }
+        },
+        {
+            "path": "gfx/decorations/electronics/ustrojstwo_grid.png",
+            "file_hash": "b58d4c84b43610b20f79c60581108e61599cba194305520b41f2b1976d712947",
+            "id": "@ustrojstwo_grid",
+            "domain": "FOREGROUND",
+            "size": [106, 106],
+            "color_wave_speed": 1.0,
+            "rotate_continuously_degrees_per_sec": 360.0
+        },
+        {
+            "path": "gfx/decorations/fotel.png",
+            "file_hash": "adce7524885cb25f9dfaa62ccef1f9e6c9aa5bc686e68816e79ac6423d058682",
+            "id": "@fotel",
+            "neon_map": {
+                "standard_deviation": 7.0,
+                "amplification": 120.0,
+                "light_colors": [[95, 205, 228, 255], [95, 205, 228, 255], [18, 214, 255, 255], [91, 114, 135, 255]
+                ]
+            },
+            "size": [118, 92],
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "OFF_neon_alpha_vibration": {
+                "change_per_second": 30.0,
+                "lower": 220
+            },
+            "as_nonphysical": {
+                "custom_footstep": {
+                    "sound": {
+                        "gain": 0.6000000238418579,
+                        "pitch": 0.8999999761581421
+                    },
+                    "walking_speed": 0.5
+                }
+            }
+        },
+        {
+            "path": "gfx/decorations/garden.png",
+            "file_hash": "902c0218f42f3dc333205b309381aa401d9af3f43ac0955a47e4a64ccc0bae5a",
+            "id": "@garden",
+            "domain": "FOREGROUND",
+            "neon_map": {
+                "light_colors": [[75, 255, 0, 255]
+                ]
+            },
+            "size": [152, 36],
+            "stretch_when_resized": true,
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_nonphysical": {
+                "full_illumination": true
+            }
+        },
+        {
+            "path": "gfx/decorations/rc.png",
+            "file_hash": "32c513dcafcd345bb98f5334844ba330c4dfe046226e4bb8a36b8df00edc6720",
+            "id": "@rc",
+            "domain": "FOREGROUND",
+            "neon_map": {
+                "standard_deviation": 8.0,
+                "amplification": 120.0,
+                "light_colors": [[255, 255, 0, 255]
+                ]
+            },
+            "size": [152, 36],
+            "stretch_when_resized": true,
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_nonphysical": {
+                "full_illumination": true
+            }
+        },
+        {
+            "path": "gfx/decorations/szkicstracja2.png",
+            "file_hash": "fe0298bb7e4ce3d0d684361a9b3837cee1bc5ce64a7ece0e401bac917a250c3b",
+            "id": "@szkicstracja2",
+            "neon_map": {
+                "light_colors": [[99, 155, 255, 255], [249, 0, 255, 255]
+                ]
+            },
+            "color": [255, 255, 223, 255],
+            "size": [178, 180],
+            "stretch_when_resized": true,
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_nonphysical": {
+                "illuminate_like_wall": true,
+                "custom_footstep": {
+                    "sound": {
+                        "gain": 0.6000000238418579,
+                        "pitch": 0.8999999761581421
+                    }
+                }
+            }
+        },
+        {
+            "path": "gfx/floor_connectors/floor_connector_2.png",
+            "file_hash": "c81fcc7259e67a70f06decb61d238e5831063e0023a362c902cc0c689e1c3ca6",
+            "id": "@floor_connector_2",
+            "neon_map": {},
+            "size": [128, 32],
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_nonphysical": {
+                "custom_footstep": {
+                    "sound": {
+                        "gain": 0.6000000238418579,
+                        "pitch": 0.8999999761581421
+                    }
+                }
+            }
+        },
+        {
+            "path": "gfx/floors/neteee.png",
+            "file_hash": "bbbc3583938871a903c442b6981a2776c76cee72eae36f96e5c05cf10cee13e4",
+            "id": "@neteee",
+            "neon_map": {
+                "light_colors": [[0, 255, 233, 255]
+                ]
+            },
+            "neon_color": [255, 255, 255, 106],
+            "size": [128, 128],
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_nonphysical": {
+                "custom_footstep": {
+                    "sound": {
+                        "gain": 0.6000000238418579,
+                        "pitch": 0.8999999761581421
+                    }
+                }
+            }
+        },
+        {
+            "path": "gfx/floors/tile1.png",
+            "file_hash": "90598cf795877bcf3c3c5de9a99a29bd916c3c095718b94ed0dd1306d4919cc6",
+            "id": "@tile1",
+            "neon_color": [255, 255, 255, 106],
+            "size": [128, 128],
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_nonphysical": {
+                "custom_footstep": {
+                    "sound": {
+                        "gain": 0.6000000238418579,
+                        "pitch": 0.8999999761581421
+                    }
+                }
+            }
+        },
+        {
+            "path": "gfx/floors/water_room_floor_2.png",
+            "file_hash": "9d7d4e14d04d6bda52e7c7b59ed0f177caadf5e3a486fde33f1fce82883e0826",
+            "id": "@water_room_floor_2",
+            "color": [255, 132, 132, 255],
+            "neon_color": [255, 255, 255, 106],
+            "size": [64, 64],
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_nonphysical": {
+                "custom_footstep": {
+                    "sound": {
+                        "gain": 0.6000000238418579,
+                        "pitch": 0.8999999761581421
+                    }
+                }
+            }
+        },
+        {
+            "path": "gfx/generator/generatorleftcab.png",
+            "file_hash": "b9921b5ae7b48ab395ae4ccd46300568b85711a058d262c8707680dfabfdb4d0",
+            "id": "@generatorleftcab",
+            "neon_map": {
+                "standard_deviation": 7.0,
+                "amplification": 80.0,
+                "light_colors": [[153, 229, 80, 255], [206, 79, 0, 255], [251, 242, 54, 255], [144, 73, 25, 255], [55, 148, 110, 255], [160, 155, 35, 255], [160, 155, 35, 255]
+                ]
+            },
+            "size": [249, 385],
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_nonphysical": {
+                "custom_footstep": {
+                    "sound": {
+                        "gain": 0.6000000238418579,
+                        "pitch": 0.8999999761581421
+                    },
+                    "walking_speed": 0.699999988079071
+                }
+            }
+        },
+        {
+            "path": "gfx/generator/generatormainpart.png",
+            "file_hash": "b533c3f32029ed9648cccb693d14dc7a67a016b3324b3721bde0ce2b0734747c",
+            "id": "@generatormainpart",
+            "domain": "PHYSICAL",
+            "size": [540, 450],
+            "stretch_when_resized": true,
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_physical": {
+                "is_static": true,
+                "density": 5.5,
+                "bounciness": 0.800000011920929,
+                "cover_background_neons": false,
+                "custom_shape": {
+                    "source_polygon": [[-267.0, -136.0], [-86.0, -137.0], [38.0, -177.0], [133.0, -144.0], [181.0, -117.0], [253.0, -117.0], [269.0, -20.0], [253.0, 86.0], [182.0, 85.0], [133.0, 112.0], [37.0, 145.0], [-87.0, 104.0], [-267.0, 105.0]
+                    ],
+                    "convex_partition": [
+                        11,
+                        12,
+                        0,
+                        1,
+                        11,
+                        6,
+                        7,
+                        8,
+                        4,
+                        5,
+                        6,
+                        9,
+                        10,
+                        11,
+                        1,
+                        2,
+                        3,
+                        4,
+                        8,
+                        9
+                    ]
+                }
+            }
+        },
+        {
+            "path": "gfx/generator/generatormainpartlight.png",
+            "file_hash": "3b70e060e0a059b6b7533620940993ce10e04ead1d7dfe2c289b34d708ec64b3",
+            "id": "@generatormainpartlight",
+            "domain": "FOREGROUND",
+            "neon_map": {
+                "light_colors": [[255, 255, 255, 255]
+                ]
+            },
+            "color": [83, 255, 255, 255],
+            "neon_color": [255, 255, 253, 255],
+            "size": [215, 293],
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "neon_alpha_vibration": {
+                "change_per_second": 99.0,
+                "lower": 174
+            },
+            "as_nonphysical": {
+                "full_illumination": true,
+                "custom_footstep": {
+                    "sound": {
+                        "gain": 0.6000000238418579,
+                        "pitch": 0.8999999761581421
+                    }
+                }
+            }
+        },
+        {
+            "path": "gfx/generator/generatorpart1.png",
+            "file_hash": "74f05679f9c33af4dbf88333710ec7459630a70098fbf900240d4266a01ac0d9",
+            "id": "@generatorpart1",
+            "neon_map": {
+                "light_colors": [[255, 255, 255, 255]
+                ]
+            },
+            "neon_color": [0, 0, 255, 255],
+            "size": [410, 129],
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "neon_alpha_vibration": {},
+            "as_nonphysical": {
+                "custom_footstep": {
+                    "sound": {
+                        "gain": 0.6000000238418579,
+                        "pitch": 0.8999999761581421
+                    }
+                }
+            }
+        },
+        {
+            "path": "gfx/lab_wall.png",
+            "file_hash": "383b53ebdd3d55a3a5cdfedc79f41bc1655923b4cc73a3c69690326173eb5a89",
+            "id": "@lab_wall",
+            "domain": "FOREGROUND",
+            "size": [128, 32],
+            "stretch_when_resized": true,
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_nonphysical": {
+                "cover_background_neons": true,
+                "illuminate_like_wall": true,
+                "custom_footstep": {
+                    "sound": {
+                        "gain": 0.6000000238418579,
+                        "pitch": 0.8999999761581421
+                    }
+                }
+            }
+        },
+        {
+            "path": "gfx/lab_wall_a2.png",
+            "file_hash": "76e61c7e932dee1f70df85fb181e9cb42fd8d27f8a031a29b2df2c65a3b44ef9",
+            "id": "@lab_wall_a2",
+            "domain": "FOREGROUND",
+            "neon_map": {
+                "standard_deviation": 5.0,
+                "light_colors": [[255, 255, 255, 255]
+                ]
+            },
+            "size": [128, 32],
+            "OFF_rotate_continuously_degrees_per_sec": 1.0
+        },
+        {
+            "path": "gfx/lab_wall_corner_cut_foreground.png",
+            "file_hash": "cd06cbaa10b86a87d54e2d9cc8cfbc74cac8a76dc1bf9e57e192913e52cad76b",
+            "id": "@lab_wall_corner_cut_foreground",
+            "domain": "FOREGROUND",
+            "size": [32, 32],
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_nonphysical": {
+                "illuminate_like_wall": true,
+                "custom_footstep": {
+                    "sound": {
+                        "gain": 0.6000000238418579,
+                        "pitch": 0.8999999761581421
+                    }
+                }
+            }
+        },
+        {
+            "path": "gfx/lab_wall_corner_square.png",
+            "file_hash": "b9278788be1e0efdc73d8a2301e405ca374e4c2051ca85d425477d72e52eed31",
+            "id": "@lab_wall_corner_square",
+            "domain": "FOREGROUND",
+            "size": [32, 32],
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_nonphysical": {
+                "illuminate_like_wall": true,
+                "custom_footstep": {
+                    "sound": {
+                        "gain": 0.6000000238418579,
+                        "pitch": 0.8999999761581421
+                    }
+                }
+            }
+        },
+        {
+            "path": "gfx/lab_wall_corner_square_2.png",
+            "file_hash": "e4941805c5e0e77e5f6c5a9eaf4d51fe459fea25bd86e8c7b3e024179c021845",
+            "id": "@lab_wall_corner_square_2",
+            "domain": "FOREGROUND",
+            "size": [32, 32],
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_nonphysical": {
+                "illuminate_like_wall": true,
+                "OFF_custom_footstep": {
+                    "sound": {
+                        "gain": 0.6000000238418579,
+                        "pitch": 0.8999999761581421
+                    }
+                }
+            }
+        },
+        {
+            "path": "gfx/lab_wall_smooth_end.png",
+            "file_hash": "01c79fa2062798313835d4fb2aad4e891802c65f0f3e33539015c7d74ed9a361",
+            "id": "@lab_wall_smooth_end",
+            "domain": "FOREGROUND",
+            "size": [46, 32],
+            "as_nonphysical": {
+                "illuminate_like_wall": true
+            }
+        },
+        {
+            "path": "gfx/obstacles/steel_crate.png",
+            "file_hash": "ac18db3b8941e28dabf2faa3c0bd8c7c7d8201544ac762f16dc5e147c3973e2f",
+            "id": "@steel_crate",
+            "domain": "PHYSICAL",
+            "neon_map": {
+                "standard_deviation": 9.0,
+                "amplification": 80.0,
+                "light_colors": [[0, 234, 255, 255]
+                ]
+            },
+            "size": [128, 128],
+            "stretch_when_resized": true,
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_physical": {
+                "density": 4.0,
+                "bounciness": 0.800000011920929,
+                "custom_shape": {
+                    "source_polygon": [[-64.0, 50.0], [-56.0, 34.0], [-56.0, -36.0], [-63.0, -50.0], [-51.0, -64.0], [-1.0, -38.0], [50.0, -64.0], [63.0, -51.0], [56.0, -35.0], [56.0, 34.0], [63.0, 50.0], [50.0, 63.0], [0.0, 38.0], [-52.0, 63.0]
+                    ],
+                    "convex_partition": [
+                        3,
+                        4,
+                        5,
+                        2,
+                        3,
+                        12,
+                        1,
+                        2,
+                        5,
+                        8,
+                        9,
+                        12,
+                        12,
+                        13,
+                        0,
+                        1,
+                        12,
+                        5,
+                        6,
+                        7,
+                        8,
+                        5,
+                        11,
+                        12,
+                        9,
+                        10,
+                        11
+                    ]
+                }
+            }
+        },
+        {
+            "path": "gfx/obstacles/violet_box.png",
+            "file_hash": "639d683b727d53b72e7e3b8db4756cd65273626e6fc0c7dbc93db00d641ad053",
+            "id": "@violet_box",
+            "domain": "PHYSICAL",
+            "neon_map": {
+                "light_colors": [[96, 225, 1, 255], [35, 211, 213, 255], [35, 211, 213, 255], [32, 90, 77, 255]
+                ]
+            },
+            "size": [128, 128],
+            "stretch_when_resized": true,
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_physical": {
+                "density": 1.0,
+                "bounciness": 0.800000011920929
+            }
+        },
+        {
+            "path": "gfx/obstacles/yellow_barrier.png",
+            "file_hash": "476d3f37c8629632a11f7b5102840f4e54629ab285299588ce8550538ee0d177",
+            "id": "@yellow_barrier",
+            "neon_map": {
+                "light_colors": [[232, 199, 65, 255]
+                ]
+            },
+            "size": [32, 128],
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_nonphysical": {
+                "custom_footstep": {
+                    "sound": {
+                        "gain": 0.6000000238418579,
+                        "pitch": 0.8999999761581421
+                    }
+                }
+            }
+        },
+        {
+            "path": "gfx/pale_cyan_floor/pale_cyan_floor_1.png",
+            "file_hash": "ae0b55b4b5618660c96384d743f415f8604bc83a957f1e3139da7d6a7f5150a2",
+            "id": "@pale_cyan_floor_1",
+            "neon_map": {
+                "light_colors": [[28, 255, 246, 255]
+                ]
+            },
+            "neon_color": [255, 255, 255, 106],
+            "size": [128, 128],
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_nonphysical": {
+                "custom_footstep": {
+                    "sound": {
+                        "gain": 0.6000000238418579,
+                        "pitch": 0.8999999761581421
+                    }
+                }
+            }
+        },
+        {
+            "path": "gfx/sub/sub_chair_brown.png",
+            "file_hash": "6e9534f9908d80dc52a480217f4a6500d4d59260636bf1bfefb9f7a1fc55ac2b",
+            "id": "@sub_chair_brown",
+            "neon_map": {
+                "standard_deviation": 8.0,
+                "amplification": 350.0,
+                "light_colors": [[85, 72, 72, 255], [128, 51, 51, 255], [85, 72, 72, 255], [58, 47, 47, 255]
+                ]
+            },
+            "size": [78, 48],
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_nonphysical": {
+                "custom_footstep": {
+                    "sound": {
+                        "gain": 0.6000000238418579,
+                        "pitch": 0.8999999761581421
+                    },
+                    "walking_speed": 0.6000000238418579
+                }
+            }
+        },
+        {
+            "path": "gfx/warning_line/warning_line.png",
+            "file_hash": "b8a25c02bf96c7247da78e090f475ce1e22cbb2a67e2adf9c8b0877d86b8c308",
+            "id": "@warning_line",
+            "neon_map": {
+                "light_colors": [[213, 167, 56, 255], [212, 196, 80, 255]
+                ]
+            },
+            "size": [128, 33],
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_nonphysical": {
+                "custom_footstep": {
+                    "sound": {
+                        "gain": 0.6000000238418579,
+                        "pitch": 0.8999999761581421
+                    }
+                }
+            }
+        },
+        {
+            "path": "gfx/warning_line/warning_line_corner.png",
+            "file_hash": "2c482e04e9ffcf4bbff1dd93952196d9866de16e1fb40c5237e51545ee395884",
+            "id": "@warning_line_corner",
+            "neon_map": {
+                "light_colors": [[213, 167, 56, 255], [212, 196, 80, 255]
+                ]
+            },
+            "size": [90, 90],
+            "OFF_rotate_continuously_degrees_per_sec": 1.0,
+            "as_nonphysical": {
+                "custom_footstep": {
+                    "sound": {
+                        "gain": 0.6000000238418579,
+                        "pitch": 0.8999999761581421
+                    }
+                }
+            }
+        },
+        {
+            "path": "gfx/water_room_floor.png",
+            "file_hash": "67c17418dc25e164ebf0265d50490fd9388da8ff0e37ae4d7838b2a9d8a4b7ed",
+            "id": "@water_room_floor",
+            "neon_map": {
+                "standard_deviation": 8.0,
+                "amplification": 10.0,
+                "light_colors": [[95, 205, 228, 255]
+                ]
+            },
+            "neon_color": [255, 255, 255, 106],
+            "size": [64, 64],
+            "as_nonphysical": {
+                "custom_footstep": {
+                    "sound": {
+                        "id": "footstep_floor"
+                    }
+                }
+            }
+        }
+    ],
+    "layers": [
+        {
+            "id": "colliders",
+            "is_open_in_editor": false,
+            "opacity": 0.0,
+            "nodes": [
+                "spawn"
+            ]
+        },
+        {
+            "id": "walle a2",
+            "nodes": [
+                "Lab wall a2",
+                "Lab wall a2 (12)"
+            ]
+        },
+        {
+            "id": "New layer",
+            "nodes": [
+                "Wandering smoke (2)",
+                "Wandering smoke (3)",
+                "Wandering smoke (4)",
+                "Wandering smoke (7)",
+                "Bombsite c",
+                "GeneratorMAINPARTlight",
+                "Rc (1)",
+                "Rc",
+                "Rc (5)",
+                "Ustrojstwo grid",
+                "Garden (1)",
+                "Lab wall corner square 2 (7)",
+                "Lab wall corner square 2 (8)",
+                "Lab wall corner square (54)",
+                "Lab wall corner square (55)",
+                "Lab wall corner square (28)",
+                "Lab wall corner square (29)",
+                "Lab wall corner square (53)",
+                "Lab wall corner square 2 (3)",
+                "Lab wall corner square (56)",
+                "Lab wall corner square 2 (4)",
+                "Lab wall corner square 2 (5)",
+                "Lab wall corner square (57)",
+                "Lab wall corner square (52)",
+                "Lab wall corner square 2 (6)",
+                "Lab wall corner square (51)",
+                "Lab wall corner square (50)",
+                "Lab wall corner square (49)",
+                "Lab wall corner square (12)",
+                "Lab wall corner square (42)",
+                "Lab wall corner square (43)",
+                "Lab wall corner square (44)",
+                "Lab wall corner square (45)",
+                "Lab wall corner square (46)",
+                "Lab wall corner square (47)",
+                "Lab wall corner square (48)",
+                "Violet box (1)",
+                "Noweustrojstwo",
+                "Violet box (11)",
+                "Violet box (10)",
+                "Steel crate (2)",
+                "Violet box (9)",
+                "Violet box (8)",
+                "Steel crate (1)",
+                "Steel crate",
+                "Lab wall (135)",
+                "Lab wall (134)",
+                "Lab wall (133)",
+                "Lab wall (136)",
+                "Lab wall (137)",
+                "Lab wall (138)",
+                "Lab wall (139)",
+                "Lab wall (140)",
+                "Lab wall (132)",
+                "Lab wall (131)",
+                "Lab wall (141)",
+                "Lab wall (130)",
+                "Lab wall (129)",
+                "Lab wall (128)",
+                "Lab wall (127)",
+                "Lab wall (126)",
+                "Lab wall (125)",
+                "Lab wall corner cut",
+                "Lab wall (124)",
+                "Lab wall (123)",
+                "Aquarium pump",
+                "Lab wall (122)",
+                "Lab wall corner cut (1)",
+                "Lab wall (121)",
+                "Lab wall (120)",
+                "Lab wall corner cut (2)",
+                "Lab wall (84)",
+                "Lab wall corner cut (64)",
+                "Lab wall (105)",
+                "Lab wall (104)",
+                "Lab wall (103)",
+                "Lab wall (102)",
+                "Lab wall smooth end (5)",
+                "Lab wall (100)",
+                "Lab wall (6)",
+                "Szkicstracja2",
+                "Lab wall corner cut foreground",
+                "Lab wall (36)",
+                "Lab wall (37)",
+                "GeneratorMAINPART",
+                "Floor neon overlay (17)",
+                "Floor neon overlay (5)",
+                "Floor neon overlay (18)",
+                "Yellow barrier",
+                "Yellow barrier (1)",
+                "GeneratorCONNECTOR (3)",
+                "GeneratorCONNECTOR (4)",
+                "GeneratorRIGHTCAB (1)",
+                "GeneratorCONNECTOR (5)",
+                "GeneratorCONNECTOR (6)",
+                "GeneratorCONNECTOR (7)",
+                "GeneratorCONNECTOR (8)",
+                "GeneratorLEFTCAB",
+                "GeneratorCONNECTOR (9)",
+                "GeneratorCONNECTOR (10)",
+                "GeneratorCONNECTOR (11)",
+                "GeneratorCONNECTOR (12)",
+                "GeneratorCONNECTOR (13)",
+                "GeneratorCONNECTOR (14)",
+                "GeneratorCONSOLElight (3)",
+                "Fotel (9)",
+                "Fotel (8)",
+                "Rotating fan-on-floor (1)",
+                "Fotel (3)",
+                "Fotel (4)",
+                "Fotel",
+                "Fotel (1)",
+                "Console light (7)",
+                "Warning line corner",
+                "Warning line",
+                "Console light (5)",
+                "Console light (4)",
+                "Console light (3)",
+                "Console light (1)",
+                "Console light",
+                "Floor connector 2 (1)",
+                "Warning line (2)",
+                "GeneratorCONSOLE (1)",
+                "black on floor (2)",
+                "GeneratorPART1 (1)-left",
+                "GeneratorPART1 (1)",
+                "black on floor (1)",
+                "Warning line (1)",
+                "Pale cyan floor 1 (13)",
+                "Water room floor 2",
+                "Water room floor-brighter",
+                "Water room floor 2 (1)",
+                "Water room floor 2 (2)",
+                "Water room floor 2 (3)",
+                "Water room floor-brighter (1)",
+                "Water room floor 2 (4)",
+                "Water room floor 2 (5)",
+                "Water room floor-brighter (2)",
+                "Water room floor 2 (6)",
+                "Water room floor-brighter (3)",
+                "Water room floor 2 (7)",
+                "Water room floor 2 (8)",
+                "Water room floor-brighter (4)",
+                "Water room floor-brighter (5)",
+                "Water room floor-brighter (6)",
+                "Water room floor 2 (9)",
+                "Water room floor 2 (10)",
+                "Water room floor-brighter (7)",
+                "Water room floor 2 (11)",
+                "Water room floor 2 (12)",
+                "Water room floor 2 (13)",
+                "Water room floor 2 (14)",
+                "Water room floor 2 (15)",
+                "Water room floor 2 (16)",
+                "Water room floor 2 (17)",
+                "Water room floor-brighter (8)",
+                "Water room floor-brighter (9)",
+                "Water room floor-brighter (10)",
+                "Water room floor-brighter (11)",
+                "Water room floor-brighter (12)",
+                "Water room floor 2 (18)",
+                "Water room floor-brighter (13)",
+                "Water room floor-brighter (14)",
+                "Water room floor 2 (19)",
+                "Water room floor 2 (20)",
+                "Water room floor 2 (21)",
+                "Water room floor-brighter (15)",
+                "Water room floor 2 (22)",
+                "Neteee (2)",
+                "Tile1 (1)",
+                "Tile1",
+                "Strong lamp (39)",
+                "Strong lamp (7)",
+                "Strong lamp (42)",
+                "Strong lamp (44)",
+                "Strong lamp (45)",
+                "Strong lamp (46)",
+                "Strong lamp (43)",
+                "Strong lamp (3)",
+                "Strong lamp (40)"
+            ]
+        }
+    ],
+    "nodes": [
+        {
+            "id": "GeneratorMAINPARTlight",
+            "type": "@generatormainpartlight",
+            "pos": [855.0, 2097.0]
+        },
+        {
+            "id": "Rc (1)",
+            "type": "@rc",
+            "pos": [332.0, 782.0],
+            "rotation": -180.0
+        },
+        {
+            "id": "Rc",
+            "type": "@rc",
+            "pos": [20.0, 1362.0]
+        },
+        {
+            "id": "Rc (5)",
+            "type": "@rc",
+            "pos": [2604.0, 1330.0],
+            "rotation": -180.0
+        },
+        {
+            "id": "Ustrojstwo grid",
+            "type": "@ustrojstwo_grid",
+            "pos": [1312.0, 1118.0],
+            "rotation": 6.000000476837158
+        },
+        {
+            "id": "Garden (1)",
+            "type": "@garden",
+            "pos": [2900.0, 1330.0]
+        },
+        {
+            "id": "Lab wall corner square 2 (7)",
+            "type": "@lab_wall_corner_square_2",
+            "pos": [1456.0, 3504.0]
+        },
+        {
+            "id": "Lab wall corner square 2 (8)",
+            "type": "@lab_wall_corner_square_2",
+            "pos": [464.0, 3504.0],
+            "rotation": -360.0,
+            "flip_horizontally": true
+        },
+        {
+            "id": "Lab wall corner square (54)",
+            "type": "@lab_wall_corner_square",
+            "pos": [784.0, 3056.0],
+            "rotation": -270.0
+        },
+        {
+            "id": "Lab wall corner square (55)",
+            "type": "@lab_wall_corner_square",
+            "pos": [784.0, 3248.0],
+            "rotation": -360.0
+        },
+        {
+            "id": "Lab wall corner square (28)",
+            "type": "@lab_wall_corner_square",
+            "pos": [2512.0, 1296.0],
+            "rotation": 90.0,
+            "flip_vertically": true
+        },
+        {
+            "id": "Lab wall corner square (29)",
+            "type": "@lab_wall_corner_square",
+            "pos": [240.0, 400.0],
+            "rotation": -450.0,
+            "flip_horizontally": true
+        },
+        {
+            "id": "Lab wall corner square (53)",
+            "type": "@lab_wall_corner_square",
+            "pos": [80.0, 1392.0],
+            "rotation": -450.0
+        },
+        {
+            "id": "Lab wall corner square 2 (3)",
+            "type": "@lab_wall_corner_square_2",
+            "pos": [2576.0, 2896.0],
+            "rotation": 90.0
+        },
+        {
+            "id": "Lab wall corner square (56)",
+            "type": "@lab_wall_corner_square",
+            "pos": [1136.0, 3248.0],
+            "rotation": 90.0,
+            "flip_horizontally": true,
+            "flip_vertically": true
+        },
+        {
+            "id": "Lab wall corner square 2 (4)",
+            "type": "@lab_wall_corner_square_2",
+            "pos": [3440.0, 2544.0],
+            "rotation": -90.0,
+            "flip_horizontally": true
+        },
+        {
+            "id": "Lab wall corner square 2 (5)",
+            "type": "@lab_wall_corner_square_2",
+            "pos": [2960.0, 1328.0],
+            "rotation": -180.0,
+            "flip_horizontally": true,
+            "flip_vertically": true
+        },
+        {
+            "id": "Lab wall corner square (57)",
+            "type": "@lab_wall_corner_square",
+            "pos": [1136.0, 3056.0],
+            "rotation": -90.0,
+            "flip_horizontally": true
+        },
+        {
+            "id": "Lab wall corner square (52)",
+            "type": "@lab_wall_corner_square",
+            "pos": [80.0, 1360.0],
+            "rotation": -450.0,
+            "flip_horizontally": true
+        },
+        {
+            "id": "Lab wall corner square 2 (6)",
+            "type": "@lab_wall_corner_square_2",
+            "pos": [2544.0, 2896.0],
+            "rotation": -90.0,
+            "flip_horizontally": true
+        },
+        {
+            "id": "Lab wall corner square (51)",
+            "type": "@lab_wall_corner_square",
+            "pos": [2544.0, 2512.0],
+            "rotation": -270.0
+        },
+        {
+            "id": "Lab wall corner square (50)",
+            "type": "@lab_wall_corner_square",
+            "pos": [2544.0, 2544.0],
+            "rotation": -270.0,
+            "flip_horizontally": true
+        },
+        {
+            "id": "Lab wall corner square (49)",
+            "type": "@lab_wall_corner_square",
+            "pos": [2544.0, 1712.0],
+            "rotation": -270.0,
+            "flip_horizontally": true
+        },
+        {
+            "id": "Lab wall corner square (12)",
+            "type": "@lab_wall_corner_square",
+            "pos": [240.0, 432.0],
+            "rotation": -450.0
+        },
+        {
+            "id": "Lab wall corner square (42)",
+            "type": "@lab_wall_corner_square",
+            "pos": [272.0, 816.0],
+            "rotation": -270.0,
+            "flip_horizontally": true
+        },
+        {
+            "id": "Lab wall corner square (43)",
+            "type": "@lab_wall_corner_square",
+            "pos": [272.0, 784.0],
+            "rotation": -270.0
+        },
+        {
+            "id": "Lab wall corner square (44)",
+            "type": "@lab_wall_corner_square",
+            "pos": [752.0, 1296.0],
+            "rotation": -360.0,
+            "flip_horizontally": true
+        },
+        {
+            "id": "Lab wall corner square (45)",
+            "type": "@lab_wall_corner_square",
+            "pos": [688.0, 1296.0],
+            "rotation": -360.0
+        },
+        {
+            "id": "Lab wall corner square (46)",
+            "type": "@lab_wall_corner_square",
+            "pos": [-432.0, 2896.0],
+            "rotation": -360.0
+        },
+        {
+            "id": "Lab wall corner square (47)",
+            "type": "@lab_wall_corner_square",
+            "pos": [-400.0, 2896.0],
+            "rotation": -360.0,
+            "flip_horizontally": true
+        },
+        {
+            "id": "Lab wall corner square (48)",
+            "type": "@lab_wall_corner_square",
+            "pos": [2544.0, 1680.0],
+            "rotation": -270.0
+        },
+        {
+            "id": "Violet box (1)",
+            "type": "@violet_box",
+            "pos": [1102.0003662109375, 2669.999755859375],
+            "rotation": -165.00003051757813
+        },
+        {
+            "id": "Noweustrojstwo",
+            "type": "@noweustrojstwo",
+            "pos": [1310.0, 1126.0],
+            "rotation": -270.0
+        },
+        {
+            "id": "Violet box (11)",
+            "type": "@violet_box",
+            "pos": [-174.00001525878906, 2626.0],
+            "rotation": -15.000000953674316
+        },
+        {
+            "id": "Violet box (10)",
+            "type": "@violet_box",
+            "pos": [2048.0, 2752.0]
+        },
+        {
+            "id": "Steel crate (2)",
+            "type": "@steel_crate",
+            "pos": [2880.0, 2112.0]
+        },
+        {
+            "id": "Violet box (9)",
+            "type": "@violet_box",
+            "pos": [2815.999755859375, 1824.0001220703125],
+            "rotation": -90.0
+        },
+        {
+            "id": "Violet box (8)",
+            "type": "@violet_box",
+            "pos": [2706.0, 2368.0],
+            "rotation": -90.0
+        },
+        {
+            "id": "Steel crate (1)",
+            "type": "@steel_crate",
+            "pos": [1282.0001220703125, 1550.0],
+            "rotation": -75.0
+        },
+        {
+            "id": "Steel crate",
+            "type": "@steel_crate",
+            "pos": [2368.0, 1952.0],
+            "rotation": -90.0
+        },
+        {
+            "id": "Lab wall (135)",
+            "type": "@lab_wall",
+            "pos": [1456.0, 3184.0],
+            "rotation": -90.0,
+            "size": [608, 32],
+            "flip_vertically": true
+        },
+        {
+            "id": "Lab wall (134)",
+            "type": "@lab_wall",
+            "pos": [464.0, 3200.0],
+            "rotation": 90.0,
+            "size": [576, 32],
+            "flip_horizontally": true,
+            "flip_vertically": true
+        },
+        {
+            "id": "Lab wall (133)",
+            "type": "@lab_wall",
+            "pos": [2000.0, 2896.0],
+            "size": [1056, 32],
+            "flip_vertically": true
+        },
+        {
+            "id": "Lab wall (136)",
+            "type": "@lab_wall",
+            "pos": [960.0, 3504.0],
+            "size": [960, 32],
+            "flip_horizontally": true
+        },
+        {
+            "id": "Lab wall (137)",
+            "type": "@lab_wall",
+            "pos": [2000.0, 2864.0],
+            "size": [1056, 32],
+            "flip_vertically": true
+        },
+        {
+            "id": "Lab wall (138)",
+            "type": "@lab_wall",
+            "pos": [784.0, 3152.0],
+            "rotation": -90.0,
+            "size": [160, 32],
+            "flip_horizontally": true
+        },
+        {
+            "id": "Lab wall (139)",
+            "type": "@lab_wall",
+            "pos": [960.0, 3248.0],
+            "size": [320, 32],
+            "flip_horizontally": true,
+            "flip_vertically": true
+        },
+        {
+            "id": "Lab wall (140)",
+            "type": "@lab_wall",
+            "pos": [960.0, 3056.0],
+            "size": [320, 32],
+            "flip_horizontally": true
+        },
+        {
+            "id": "Lab wall (132)",
+            "type": "@lab_wall",
+            "pos": [-160.0, 1360.0],
+            "rotation": -360.0,
+            "size": [448, 32],
+            "flip_horizontally": true
+        },
+        {
+            "id": "Lab wall (131)",
+            "type": "@lab_wall",
+            "pos": [-160.0, 1392.0],
+            "rotation": -180.0,
+            "size": [448, 32]
+        },
+        {
+            "id": "Lab wall (141)",
+            "type": "@lab_wall",
+            "pos": [1136.0, 3152.0],
+            "rotation": 90.0,
+            "size": [160, 32]
+        },
+        {
+            "id": "Lab wall (130)",
+            "type": "@lab_wall",
+            "pos": [32.0, 2896.0],
+            "size": [832, 32],
+            "flip_vertically": true
+        },
+        {
+            "id": "Lab wall (129)",
+            "type": "@lab_wall",
+            "pos": [2544.0, 2720.0],
+            "rotation": 90.0,
+            "size": [320, 32],
+            "flip_horizontally": true,
+            "flip_vertically": true
+        },
+        {
+            "id": "Lab wall (128)",
+            "type": "@lab_wall",
+            "pos": [2992.0, 2544.0],
+            "rotation": -180.0,
+            "size": [864, 32],
+            "flip_horizontally": true
+        },
+        {
+            "id": "Lab wall (127)",
+            "type": "@lab_wall",
+            "pos": [2992.0, 2512.0],
+            "size": [864, 32]
+        },
+        {
+            "id": "Lab wall (126)",
+            "type": "@lab_wall",
+            "pos": [2992.0, 1712.0],
+            "rotation": -180.0,
+            "size": [864, 32],
+            "flip_horizontally": true
+        },
+        {
+            "id": "Lab wall (125)",
+            "type": "@lab_wall",
+            "pos": [2992.0, 1680.0],
+            "size": [864, 32]
+        },
+        {
+            "id": "Lab wall corner cut",
+            "type": "lab_wall_corner_cut",
+            "pos": [1456.0, 2864.0],
+            "rotation": -270.0
+        },
+        {
+            "id": "Lab wall (124)",
+            "type": "@lab_wall",
+            "pos": [-400.0, 1664.0],
+            "rotation": -270.0,
+            "size": [2432, 32]
+        },
+        {
+            "id": "Lab wall (123)",
+            "type": "@lab_wall",
+            "pos": [-432.0, 1584.0],
+            "rotation": -270.0,
+            "size": [2592, 32],
+            "flip_vertically": true
+        },
+        {
+            "id": "Aquarium pump",
+            "type": "@aquarium_pump",
+            "pos": [805.0, 1832.0001220703125],
+            "rotation": -180.0
+        },
+        {
+            "id": "Lab wall (122)",
+            "type": "@lab_wall",
+            "pos": [-80.0, 432.0],
+            "size": [608, 32],
+            "flip_vertically": true
+        },
+        {
+            "id": "Lab wall corner cut (1)",
+            "type": "lab_wall_corner_cut",
+            "pos": [464.0, 2896.0],
+            "rotation": -180.0
+        },
+        {
+            "id": "Lab wall (121)",
+            "type": "@lab_wall",
+            "pos": [480.0, 784.0],
+            "size": [384, 32]
+        },
+        {
+            "id": "Lab wall (120)",
+            "type": "@lab_wall",
+            "pos": [480.0, 816.0],
+            "rotation": -180.0,
+            "size": [384, 32],
+            "flip_horizontally": true
+        },
+        {
+            "id": "Lab wall corner cut (2)",
+            "type": "lab_wall_corner_cut",
+            "pos": [1871.9998779296875, 1296.0]
+        },
+        {
+            "id": "Lab wall (84)",
+            "type": "@lab_wall",
+            "pos": [1312.0, 784.0],
+            "size": [1088, 32],
+            "flip_vertically": true
+        },
+        {
+            "id": "Lab wall corner cut (64)",
+            "type": "lab_wall_corner_cut",
+            "pos": [2512.0, 1328.0]
+        },
+        {
+            "id": "Lab wall (105)",
+            "type": "@lab_wall",
+            "pos": [1872.0, 1040.0],
+            "rotation": 90.0,
+            "size": [480, 32]
+        },
+        {
+            "id": "Lab wall (104)",
+            "type": "@lab_wall",
+            "pos": [2192.0, 1296.0],
+            "size": [608, 32]
+        },
+        {
+            "id": "Lab wall (103)",
+            "type": "@lab_wall",
+            "pos": [2576.0, 2720.0],
+            "rotation": -90.0,
+            "size": [320, 32],
+            "flip_vertically": true
+        },
+        {
+            "id": "Lab wall (102)",
+            "type": "@lab_wall",
+            "pos": [2736.0, 1328.0],
+            "rotation": -180.0,
+            "size": [416, 32],
+            "flip_vertically": true
+        },
+        {
+            "id": "Lab wall smooth end (5)",
+            "type": "@lab_wall_smooth_end",
+            "pos": [1879.0, 784.0],
+            "rotation": -180.0,
+            "flip_horizontally": true
+        },
+        {
+            "id": "Lab wall (100)",
+            "type": "@lab_wall",
+            "pos": [1312.0, 816.0],
+            "size": [1088, 32]
+        },
+        {
+            "id": "Lab wall (6)",
+            "type": "@lab_wall",
+            "pos": [720.0, 1296.0],
+            "rotation": -180.0,
+            "size": [32, 32],
+            "flip_horizontally": true
+        },
+        {
+            "id": "Szkicstracja2",
+            "type": "@szkicstracja2",
+            "pos": [-103.0, 2118.0],
+            "rotation": -360.0
+        },
+        {
+            "id": "Lab wall corner cut foreground",
+            "type": "@lab_wall_corner_cut_foreground",
+            "pos": [-3216.0, -368.0]
+        },
+        {
+            "id": "Lab wall (36)",
+            "type": "@lab_wall",
+            "pos": [-400.0, 368.0],
+            "rotation": 90.0,
+            "size": [160, 32]
+        },
+        {
+            "id": "Lab wall (37)",
+            "type": "@lab_wall",
+            "pos": [-80.0, 400.0],
+            "size": [608, 32]
+        },
+        {
+            "id": "Lab wall a2",
+            "type": "@lab_wall_a2",
+            "pos": [976.0, 3504.0],
+            "rotation": -180.0,
+            "flip_vertically": true
+        },
+        {
+            "id": "Lab wall a2 (12)",
+            "type": "@lab_wall_a2",
+            "pos": [-400.0, 2080.0],
+            "rotation": -450.0,
+            "flip_vertically": true
+        },
+        {
+            "id": "GeneratorMAINPART",
+            "type": "@generatormainpart",
+            "pos": [818.0, 2111.0]
+        },
+        {
+            "id": "Floor neon overlay (17)",
+            "type": "@blank8",
+            "pos": [720.0, 1012.0],
+            "size": [96, 600]
+        },
+        {
+            "id": "Floor neon overlay (5)",
+            "type": "@blank8",
+            "pos": [2592.0, 1696.0],
+            "size": [128, 64]
+        },
+        {
+            "id": "Floor neon overlay (18)",
+            "type": "@blank8",
+            "pos": [625.0, 800.0],
+            "size": [96, 63]
+        },
+        {
+            "id": "Yellow barrier",
+            "type": "@yellow_barrier",
+            "pos": [960.0, 1680.0],
+            "rotation": -90.0,
+            "size": [32, 1536]
+        },
+        {
+            "id": "Yellow barrier (1)",
+            "type": "@yellow_barrier",
+            "pos": [960.0, 2544.0],
+            "rotation": -90.0,
+            "size": [32, 1536]
+        },
+        {
+            "id": "GeneratorCONNECTOR (3)",
+            "type": "@generatorconnector",
+            "pos": [944.125, 1868.875],
+            "rotation": -270.0
+        },
+        {
+            "id": "GeneratorCONNECTOR (4)",
+            "type": "@generatorconnector",
+            "pos": [944.125, 1834.875],
+            "rotation": -270.0
+        },
+        {
+            "id": "GeneratorRIGHTCAB (1)",
+            "type": "@generatorrightcab",
+            "pos": [1041.0, 1873.0],
+            "rotation": -360.0
+        },
+        {
+            "id": "GeneratorCONNECTOR (5)",
+            "type": "@generatorconnector",
+            "pos": [944.125, 1800.875],
+            "rotation": -270.0
+        },
+        {
+            "id": "GeneratorCONNECTOR (6)",
+            "type": "@generatorconnector",
+            "pos": [990.125, 1976.875],
+            "rotation": -360.0
+        },
+        {
+            "id": "GeneratorCONNECTOR (7)",
+            "type": "@generatorconnector",
+            "pos": [1024.125, 1976.875],
+            "rotation": -360.0
+        },
+        {
+            "id": "GeneratorCONNECTOR (8)",
+            "type": "@generatorconnector",
+            "pos": [1059.125, 1976.875],
+            "rotation": -360.0
+        },
+        {
+            "id": "GeneratorLEFTCAB",
+            "type": "@generatorleftcab",
+            "pos": [592.0, 1980.0]
+        },
+        {
+            "id": "GeneratorCONNECTOR (9)",
+            "type": "@generatorconnector",
+            "pos": [665.0, 1801.0],
+            "rotation": -90.0,
+            "flip_horizontally": true
+        },
+        {
+            "id": "GeneratorCONNECTOR (10)",
+            "type": "@generatorconnector",
+            "pos": [665.0, 1869.0],
+            "rotation": -90.0,
+            "flip_horizontally": true
+        },
+        {
+            "id": "GeneratorCONNECTOR (11)",
+            "type": "@generatorconnector",
+            "pos": [665.0, 1835.0],
+            "rotation": -90.0,
+            "flip_horizontally": true
+        },
+        {
+            "id": "GeneratorCONNECTOR (12)",
+            "type": "@generatorconnector",
+            "pos": [711.0, 1957.0],
+            "rotation": -360.0,
+            "flip_horizontally": true
+        },
+        {
+            "id": "GeneratorCONNECTOR (13)",
+            "type": "@generatorconnector",
+            "pos": [536.5, 2028.5],
+            "rotation": -450.0,
+            "flip_horizontally": true
+        },
+        {
+            "id": "GeneratorCONNECTOR (14)",
+            "type": "@generatorconnector",
+            "pos": [536.5, 2167.5],
+            "rotation": -450.0,
+            "flip_horizontally": true
+        },
+        {
+            "id": "GeneratorCONSOLElight (3)",
+            "type": "@generatorconsolelight",
+            "pos": [1114.0, 2097.0],
+            "flip_vertically": true
+        },
+        {
+            "id": "Fotel (8)",
+            "type": "@fotel",
+            "pos": [1179.0, 2098.0],
+            "rotation": -360.0
+        },
+        {
+            "id": "Rotating fan-on-floor (1)",
+            "type": "rotating_fan",
+            "pos": [871.0, 1831.0],
+            "rotation": 24.000001907348633
+        },
+        {
+            "id": "Fotel (3)",
+            "type": "@fotel",
+            "pos": [885.75, 1109.25],
+            "rotation": -360.0
+        },
+        {
+            "id": "Fotel (4)",
+            "type": "@fotel",
+            "pos": [1313.0, 1295.0],
+            "rotation": -270.0
+        },
+        {
+            "id": "Fotel",
+            "type": "@fotel",
+            "pos": [1739.0, 1106.0],
+            "rotation": -180.0
+        },
+        {
+            "id": "Fotel (1)",
+            "type": "@fotel",
+            "pos": [1309.0, 958.0],
+            "rotation": -90.0,
+            "flip_vertically": true
+        },
+        {
+            "id": "Console light (7)",
+            "type": "cyber_panel",
+            "pos": [796.0, 1236.0]
+        },
+        {
+            "id": "Warning line corner",
+            "type": "@warning_line_corner",
+            "pos": [653.0, 1331.0],
+            "rotation": -270.0
+        },
+        {
+            "id": "Warning line",
+            "type": "@warning_line",
+            "pos": [352.0, 1359.0],
+            "rotation": -360.0,
+            "size": [512, 33]
+        },
+        {
+            "id": "Console light (5)",
+            "type": "cyber_panel",
+            "pos": [796.0, 932.0]
+        },
+        {
+            "id": "Console light (4)",
+            "type": "cyber_panel",
+            "pos": [1828.0, 1084.0],
+            "rotation": -180.0
+        },
+        {
+            "id": "Console light (3)",
+            "type": "cyber_panel",
+            "pos": [796.25, 1083.75],
+            "rotation": -360.0
+        },
+        {
+            "id": "Console light (1)",
+            "type": "cyber_panel",
+            "pos": [1828.0, 932.0],
+            "rotation": -180.0
+        },
+        {
+            "id": "Console light",
+            "type": "cyber_panel",
+            "pos": [1828.0, 1236.0],
+            "rotation": -180.0
+        },
+        {
+            "id": "Floor connector 2 (1)",
+            "type": "@floor_connector_2",
+            "pos": [192.0, 751.9999389648438],
+            "rotation": -360.0,
+            "size": [1152, 32]
+        },
+        {
+            "id": "Warning line (2)",
+            "type": "@warning_line",
+            "pos": [682.5, 1031.5],
+            "rotation": -450.0,
+            "size": [512, 33]
+        },
+        {
+            "id": "GeneratorCONSOLE (1)",
+            "type": "@generatorconsole",
+            "pos": [1101.0, 2096.0],
+            "rotation": -360.0,
+            "size": [54, 192]
+        },
+        {
+            "id": "black on floor (2)",
+            "type": "@blank9",
+            "pos": [805.0, 1832.0],
+            "rotation": -90.0,
+            "size": [118, 243]
+        },
+        {
+            "id": "GeneratorPART1 (1)",
+            "type": "@generatorpart1",
+            "pos": [1664.0, 2106.0],
+            "rotation": -90.0,
+            "size": [820, 129]
+        },
+        {
+            "id": "black on floor (1)",
+            "type": "@blank9",
+            "pos": [804.0, 1832.0],
+            "rotation": -90.0,
+            "size": [118, 243]
+        },
+        {
+            "id": "Warning line (1)",
+            "type": "@warning_line",
+            "pos": [2544.0, 1536.0],
+            "rotation": -90.0,
+            "size": [384, 33]
+        },
+        {
+            "id": "Pale cyan floor 1 (13)",
+            "type": "@pale_cyan_floor_1",
+            "pos": [-64.0, 576.0],
+            "rotation": -90.0,
+            "size": [384, 640],
+            "flip_horizontally": true
+        },
+        {
+            "id": "Water room floor 2",
+            "type": "@water_room_floor_2",
+            "pos": [-64.0, 800.0],
+            "size": [640, 64]
+        },
+        {
+            "id": "Water room floor-brighter",
+            "type": "@water_room_floor",
+            "pos": [768.0, 1056.0],
+            "size": [2176, 448],
+            "color": [255, 132, 132, 255]
+        },
+        {
+            "id": "Water room floor 2 (1)",
+            "type": "@water_room_floor_2",
+            "pos": [1536.0, 1312.0],
+            "size": [3840, 64]
+        },
+        {
+            "id": "Water room floor 2 (2)",
+            "type": "@water_room_floor_2",
+            "pos": [-352.0, 1056.0],
+            "size": [64, 448]
+        },
+        {
+            "id": "Water room floor 2 (3)",
+            "type": "@water_room_floor_2",
+            "pos": [-352.0, 2080.0],
+            "size": [64, 1472]
+        },
+        {
+            "id": "Water room floor-brighter (1)",
+            "type": "@water_room_floor",
+            "pos": [3008.0, 1472.0],
+            "size": [896, 256],
+            "color": [255, 132, 132, 255]
+        },
+        {
+            "id": "Water room floor 2 (4)",
+            "type": "@water_room_floor_2",
+            "pos": [3008.0, 1632.0],
+            "size": [896, 64]
+        },
+        {
+            "id": "Water room floor 2 (5)",
+            "type": "@water_room_floor_2",
+            "pos": [2528.0, 2112.0],
+            "size": [64, 1536]
+        },
+        {
+            "id": "Water room floor-brighter (2)",
+            "type": "@water_room_floor",
+            "pos": [-64.0, 2144.0],
+            "size": [512, 1344],
+            "color": [255, 132, 132, 255]
+        },
+        {
+            "id": "Water room floor 2 (6)",
+            "type": "@water_room_floor_2",
+            "pos": [3008.0, 2464.0],
+            "size": [896, 64]
+        },
+        {
+            "id": "Water room floor-brighter (3)",
+            "type": "@water_room_floor",
+            "pos": [3008.0, 2112.0],
+            "size": [896, 640],
+            "color": [255, 132, 132, 255]
+        },
+        {
+            "id": "Water room floor 2 (7)",
+            "type": "@water_room_floor_2",
+            "pos": [3008.0, 1760.0],
+            "size": [896, 64]
+        },
+        {
+            "id": "Water room floor 2 (8)",
+            "type": "@water_room_floor_2",
+            "pos": [64.0, 2848.0],
+            "size": [896, 64]
+        },
+        {
+            "id": "Water room floor-brighter (4)",
+            "type": "@water_room_floor",
+            "pos": [1344.0, 1504.0],
+            "size": [2304, 320],
+            "color": [255, 132, 132, 255]
+        },
+        {
+            "id": "Water room floor-brighter (5)",
+            "type": "@water_room_floor",
+            "pos": [2112.0, 2240.0],
+            "size": [768, 1152],
+            "color": [255, 132, 132, 255]
+        },
+        {
+            "id": "Water room floor-brighter (6)",
+            "type": "@water_room_floor",
+            "pos": [960.0, 2688.0],
+            "size": [1536, 256],
+            "color": [255, 132, 132, 255]
+        },
+        {
+            "id": "Water room floor 2 (9)",
+            "type": "@water_room_floor_2",
+            "pos": [-96.0, 1440.0],
+            "size": [448, 64]
+        },
+        {
+            "id": "Water room floor 2 (10)",
+            "type": "@water_room_floor_2",
+            "pos": [96.0, 1376.0],
+            "size": [64, 64]
+        },
+        {
+            "id": "Water room floor-brighter (7)",
+            "type": "@water_room_floor",
+            "pos": [160.0, 1408.0],
+            "size": [64, 128],
+            "color": [255, 132, 132, 255]
+        },
+        {
+            "id": "Water room floor 2 (11)",
+            "type": "@water_room_floor_2",
+            "pos": [224.0, 2112.0],
+            "size": [64, 896]
+        },
+        {
+            "id": "Water room floor 2 (12)",
+            "type": "@water_room_floor_2",
+            "pos": [992.0, 1696.0],
+            "rotation": -90.0,
+            "size": [64, 1472]
+        },
+        {
+            "id": "Water room floor 2 (13)",
+            "type": "@water_room_floor_2",
+            "pos": [992.0, 2528.0],
+            "rotation": -90.0,
+            "size": [64, 1472]
+        },
+        {
+            "id": "Water room floor 2 (14)",
+            "type": "@water_room_floor_2",
+            "pos": [1696.0, 2112.0],
+            "size": [64, 768]
+        },
+        {
+            "id": "Water room floor 2 (15)",
+            "type": "@water_room_floor_2",
+            "pos": [480.0, 3168.0],
+            "size": [64, 576]
+        },
+        {
+            "id": "Water room floor 2 (16)",
+            "type": "@water_room_floor_2",
+            "pos": [1440.0, 3168.0],
+            "size": [64, 576]
+        },
+        {
+            "id": "Water room floor 2 (17)",
+            "type": "@water_room_floor_2",
+            "pos": [960.0, 3488.0],
+            "rotation": -90.0,
+            "size": [64, 1024]
+        },
+        {
+            "id": "Water room floor-brighter (8)",
+            "type": "@water_room_floor",
+            "pos": [960.0, 3168.0],
+            "size": [384, 192],
+            "color": [255, 0, 30, 255]
+        },
+        {
+            "id": "Water room floor-brighter (9)",
+            "type": "@water_room_floor",
+            "pos": [608.0, 3168.0],
+            "size": [192, 576],
+            "color": [255, 132, 132, 255]
+        },
+        {
+            "id": "Water room floor-brighter (10)",
+            "type": "@water_room_floor",
+            "pos": [1312.0, 3168.0],
+            "size": [192, 576],
+            "color": [255, 132, 132, 255]
+        },
+        {
+            "id": "Water room floor-brighter (11)",
+            "type": "@water_room_floor",
+            "pos": [960.0, 3392.0],
+            "size": [384, 128],
+            "color": [255, 132, 132, 255]
+        },
+        {
+            "id": "Water room floor-brighter (12)",
+            "type": "@water_room_floor",
+            "pos": [960.0, 2944.0],
+            "size": [512, 128],
+            "color": [255, 132, 132, 255]
+        },
+        {
+            "id": "Water room floor 2 (18)",
+            "type": "@water_room_floor_2",
+            "pos": [1952.0, 2848.0],
+            "size": [1088, 64]
+        },
+        {
+            "id": "Water room floor-brighter (13)",
+            "type": "@water_room_floor",
+            "pos": [960.0, 2848.0],
+            "size": [896, 64],
+            "color": [255, 132, 132, 255]
+        },
+        {
+            "id": "Water room floor-brighter (14)",
+            "type": "@water_room_floor",
+            "pos": [1184.0, 3392.0],
+            "size": [64, 128],
+            "color": [255, 132, 132, 255]
+        },
+        {
+            "id": "Water room floor 2 (19)",
+            "type": "@water_room_floor_2",
+            "pos": [1184.0, 3168.0],
+            "rotation": -90.0,
+            "size": [320, 64]
+        },
+        {
+            "id": "Water room floor 2 (20)",
+            "type": "@water_room_floor_2",
+            "pos": [960.0, 3296.0],
+            "size": [384, 64]
+        },
+        {
+            "id": "Water room floor 2 (21)",
+            "type": "@water_room_floor_2",
+            "pos": [736.0, 3168.0],
+            "rotation": -90.0,
+            "size": [320, 64]
+        },
+        {
+            "id": "Water room floor-brighter (15)",
+            "type": "@water_room_floor",
+            "pos": [736.0, 3392.0],
+            "size": [64, 128],
+            "color": [255, 132, 132, 255]
+        },
+        {
+            "id": "Water room floor 2 (22)",
+            "type": "@water_room_floor_2",
+            "pos": [960.0, 3040.0],
+            "size": [384, 64]
+        },
+        {
+            "id": "Neteee (2)",
+            "type": "@neteee",
+            "pos": [1216.0, 2112.0],
+            "size": [256, 768],
+            "color": [0, 255, 255, 255]
+        },
+        {
+            "id": "Tile1 (1)",
+            "type": "@tile1",
+            "pos": [1472.0, 2112.0],
+            "size": [256, 768]
+        },
+        {
+            "id": "Tile1",
+            "type": "@tile1",
+            "pos": [704.0, 2112.0],
+            "size": [768, 768]
+        },
+        {
+            "id": "Fotel (9)",
+            "type": "@fotel",
+            "pos": [507.0, 2094.0],
+            "rotation": -360.0
+        },
+        {
+            "id": "GeneratorPART1 (1)-left",
+            "type": "@generatorpart1",
+            "pos": [256.0, 2106.0],
+            "rotation": 90.0,
+            "size": [820, 129],
+            "flip_horizontally": true
+        },
+        {
+            "id": "Strong lamp (39)",
+            "type": "point_light",
+            "pos": [-224.0, 2106.0],
+            "color": [255, 255, 255, 133],
+            "falloff": {
+                "constant": 0.6290000081062317,
+                "linear": 0.3709999918937683,
+                "radius": 1358.6500244140625,
+                "strength": 11
+            },
+            "wall_falloff": {},
+            "positional_vibration": 0.0,
+            "intensity_vibration": 0.0
+        },
+        {
+            "id": "Strong lamp (40)",
+            "type": "point_light",
+            "pos": [1665.0, 2305.0],
+            "color": [27, 255, 255, 254],
+            "falloff": {
+                "constant": 0.7829673886299133,
+                "linear": 0.21699999272823334,
+                "quadratic": 0.00003265999839641154,
+                "radius": 1244.7550048828125,
+                "strength": 6
+            },
+            "wall_falloff": {
+                "radius": 1082.5179443359375
+            }
+        },
+        {
+            "id": "Strong lamp (42)",
+            "type": "point_light",
+            "pos": [1665.0, 1889.0],
+            "color": [27, 255, 255, 254],
+            "falloff": {
+                "constant": 0.7829673886299133,
+                "linear": 0.21699999272823334,
+                "quadratic": 0.00003265999839641154,
+                "radius": 1244.7550048828125,
+                "strength": 6
+            },
+            "wall_falloff": {
+                "radius": 1082.5179443359375
+            }
+        },
+        {
+            "id": "Strong lamp (3)",
+            "type": "point_light",
+            "pos": [897.0, 2209.0],
+            "color": [44, 255, 255, 254],
+            "falloff": {
+                "constant": 0.7829673886299133,
+                "linear": 0.21699999272823334,
+                "quadratic": 0.00003265999839641154,
+                "radius": 251.7480010986328,
+                "strength": 15
+            },
+            "wall_falloff": {
+                "radius": 1082.5179443359375
+            }
+        },
+        {
+            "id": "Strong lamp (43)",
+            "type": "point_light",
+            "pos": [289.0, 1889.0],
+            "color": [0, 15, 255, 53],
+            "falloff": {
+                "constant": 0.7829673886299133,
+                "linear": 0.21699999272823334,
+                "quadratic": 0.00003265999839641154,
+                "radius": 314.68499755859375,
+                "strength": 15
+            },
+            "OFF_wall_falloff": {
+                "radius": 1082.5179443359375
+            },
+            "positional_vibration": 0.0,
+            "intensity_vibration": 0.0
+        },
+        {
+            "id": "Strong lamp (44)",
+            "type": "point_light",
+            "pos": [1217.0, 1793.0],
+            "color": [0, 15, 255, 254],
+            "falloff": {
+                "constant": 0.7829673886299133,
+                "linear": 0.21699999272823334,
+                "quadratic": 0.00003265999839641154,
+                "radius": 447.552001953125,
+                "strength": 14
+            },
+            "wall_falloff": {
+                "radius": 545.4550170898438
+            }
+        },
+        {
+            "id": "Strong lamp (45)",
+            "type": "point_light",
+            "pos": [1215.0, 2431.0],
+            "color": [0, 15, 255, 78],
+            "falloff": {
+                "constant": 0.7829673886299133,
+                "linear": 0.21699999272823334,
+                "quadratic": 0.00003265999839641154,
+                "radius": 314.68499755859375,
+                "strength": 15
+            },
+            "wall_falloff": {
+                "radius": 1082.5179443359375
+            }
+        },
+        {
+            "id": "Strong lamp (46)",
+            "type": "point_light",
+            "pos": [289.0, 2305.0],
+            "color": [0, 15, 255, 53],
+            "falloff": {
+                "constant": 0.7829673886299133,
+                "linear": 0.21699999272823334,
+                "quadratic": 0.00003265999839641154,
+                "radius": 314.68499755859375,
+                "strength": 15
+            },
+            "OFF_wall_falloff": {
+                "radius": 1082.5179443359375
+            },
+            "positional_vibration": 0.0,
+            "intensity_vibration": 0.0
+        },
+        {
+            "id": "Strong lamp (7)",
+            "type": "point_light",
+            "pos": [976.0, 3467.0],
+            "color": [27, 255, 255, 106],
+            "falloff": {
+                "constant": 0.7829673886299133,
+                "linear": 0.21699999272823334,
+                "quadratic": 0.00003265999839641154,
+                "radius": 1244.7550048828125,
+                "strength": 6
+            },
+            "wall_falloff": {
+                "radius": 1082.5179443359375
+            }
+        },
+        {
+            "id": "Wandering smoke (2)",
+            "type": "wandering_smoke",
+            "pos": [33.0, 2111.0]
+        },
+        {
+            "id": "Wandering smoke (3)",
+            "type": "wandering_smoke",
+            "pos": [257.0, 2593.0]
+        },
+        {
+            "id": "Wandering smoke (4)",
+            "type": "wandering_smoke",
+            "pos": [1761.0, 2079.0]
+        },
+        {
+            "id": "Wandering smoke (7)",
+            "type": "wandering_smoke",
+            "pos": [319.0, 1761.0]
+        },
+        {
+            "id": "spawn",
+            "type": "team_spawn",
+            "faction": "METROPOLIS",
+            "pos": [111.0, 2305.0]
+        },
+        {
+            "id": "Bombsite c",
+            "type": "bombsite",
+            "pos": [832.0, 2096.0],
+            "size": [896, 224]
+        }
+    ]
+}

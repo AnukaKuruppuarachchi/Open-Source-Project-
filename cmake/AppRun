@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# Figure out the XDG_CONFIG_HOME where to store the dynamic data
+if [ -z "$XDG_CONFIG_HOME" ]; then
+  if [ -z "$HOME" ]; then
+    HOME=$(getent passwd "$(whoami)" | cut -d':' -f 6)
+  fi
+
+  XDG_CONFIG_HOME="$HOME/.config"
+fi
+
+config_home="${XDG_CONFIG_HOME}/Hypersomnia"
+
+CALLING_CWD=$(pwd)
+
+cd "${APPDIR}/usr/share/hypersomnia/"
+"${APPDIR}/usr/bin/Hypersomnia" --calling-cwd "${CALLING_CWD}" --appdata-dir "${config_home}" --appimage-path "${APPIMAGE}" "$@"

@@ -1,0 +1,34 @@
+version: 1.0.{build}
+branches:
+  only:
+    - master
+
+image: Visual Studio 2019 Preview
+configuration: Release
+build:
+  parallel: true                  # enable MSBuild parallel builds
+  project: dev/Introspector-generator.sln      # path to Visual Studio solution or project
+  verbosity: normal
+
+notifications:
+  - provider: Email
+    to:
+      - some@email.com
+    on_build_success: false
+    on_build_failure: false
+    on_build_status_changed: false
+    
+test:
+  assemblies:
+    only:
+      - '**\*.Introspector-generator.exe'
+      - '**\*.Introspector-generator-Debug.exe'
+
+before_build:
+  - mkdir dev
+  - cd dev
+  - cmake ..
+
+test_script:
+  - ps: '& "$env:CONFIGURATION/Introspector-generator.exe"'
+  - ps: 'if($LastExitCode -ne 0) { $host.SetShouldExit($LastExitCode ) }'

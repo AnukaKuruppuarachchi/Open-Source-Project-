@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>How CTF Works — Hypersomnia</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0d1117; color: #c9d1d9; }
+
+  .deck { width: 100%; }
+
+  .slide {
+    display: none;
+    min-height: 100vh;
+    padding: 60px 80px;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .slide.active { display: flex; }
+
+  h1 { font-size: 2.6rem; color: #58a6ff; margin-bottom: 0.3em; }
+  h2 { font-size: 2rem; color: #58a6ff; margin-bottom: 0.6em; border-bottom: 2px solid #21262d; padding-bottom: 0.3em; }
+  h3 { font-size: 1.2rem; color: #79c0ff; margin-bottom: 0.3em; }
+  p, li { font-size: 1.15rem; line-height: 1.7; }
+  ul { padding-left: 1.5em; margin-top: 0.5em; }
+  li { margin-bottom: 0.4em; }
+
+  .subtitle { font-size: 1.3rem; color: #8b949e; margin-top: 0.5em; }
+  .file-ref { font-size: 0.85rem; color: #6e7681; font-style: italic; margin-top: 1.5em; }
+
+  pre, code {
+    font-family: 'Cascadia Code', 'Consolas', monospace;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #e6edf3;
+  }
+  pre { padding: 1em 1.2em; font-size: 0.95rem; margin-top: 0.8em; overflow-x: auto; }
+  code { padding: 0.1em 0.4em; font-size: 0.92em; }
+
+  .cols { display: flex; gap: 40px; margin-top: 0.8em; }
+  .col { flex: 1; }
+
+  .card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 1em 1.2em;
+    margin-top: 0.8em;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.15em 0.6em;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-right: 0.4em;
+  }
+  .badge-green { background: #238636; color: #fff; }
+  .badge-blue  { background: #1f6feb; color: #fff; }
+  .badge-orange{ background: #9e6a03; color: #fff; }
+  .badge-red   { background: #b62324; color: #fff; }
+
+  .arrow { font-size: 1.4rem; color: #388bfd; margin: 0 0.3em; }
+
+  /* State diagram */
+  .state-diagram {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin: 1.5em 0;
+    flex-wrap: wrap;
+  }
+  .state-box {
+    background: #161b22;
+    border: 2px solid #388bfd;
+    border-radius: 8px;
+    padding: 0.6em 1.2em;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1rem;
+    min-width: 120px;
+  }
+  .state-label {
+    font-size: 0.75rem;
+    color: #8b949e;
+    text-align: center;
+    display: block;
+    margin-top: 0.2em;
+  }
+  .state-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 8px;
+    font-size: 0.75rem;
+    color: #8b949e;
+  }
+  .state-arrow span { color: #388bfd; font-size: 1.4rem; }
+
+  /* Nav */
+  .nav {
+    position: fixed;
+    bottom: 24px;
+    right: 32px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .nav button {
+    background: #21262d;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 0.5em 1.2em;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .nav button:hover { background: #30363d; }
+  .nav .counter { color: #8b949e; font-size: 0.9rem; min-width: 50px; text-align: center; }
+
+  /* title slide accent */
+  .title-slide { background: linear-gradient(135deg, #0d1117 70%, #0e2033); }
+  .title-slide h1 { font-size: 3rem; }
+</style>
+</head>
+<body>
+
+<div class="deck">
+
+  <!-- ── SLIDE 1: Title ── -->
+  <div class="slide title-slide active">
+    <h1>How CTF Works</h1>
+    <p class="subtitle">Capture The Flag mode in Hypersomnia — code walkthrough</p>
+    <br>
+    <div class="card" style="max-width:520px">
+      <h3>Key files</h3>
+      <ul>
+        <li><code>src/game/modes/arena_mode.cpp</code> — all game logic</li>
+        <li><code>src/game/modes/arena_submodes.h</code> — rule structs</li>
+        <li><code>src/game/modes/mode_helpers.h</code> — shared helpers</li>
+        <li><code>src/game/enums/faction_type.h</code> — faction enum</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 2: Overview ── -->
+  <div class="slide">
+    <h2>Mode Overview</h2>
+    <p>CTF is one of three subrule variants stored in an <code>std::variant</code>:</p>
+    <pre>using all_subrules_variant = std::variant&lt;
+    bomb_defusal_rules,
+    gun_game_rules,
+    capture_the_flag_rules   // ← CTF
+&gt;;</pre>
+    <p style="margin-top:1em">The code checks which variant is active everywhere it needs to branch:</p>
+    <pre>const auto is_ctf = std::holds_alternative&lt;capture_the_flag_rules&gt;(in.rules.subrules);
+
+if (const auto ctf_rules = std::get_if&lt;capture_the_flag_rules&gt;(&amp;in.rules.subrules)) {
+    // CTF-specific logic
+}</pre>
+    <p class="file-ref">arena_submodes.h · arena_mode.cpp</p>
+  </div>
+
+  <!-- ── SLIDE 3: CTF Rules Struct ── -->
+  <div class="slide">
+    <h2>CTF Rules Struct</h2>
+    <pre>struct capture_the_flag_rules {
+    uint32_t score_to_win = 3;       // captures needed to win
+    item_flavour_id flag_flavour;    // same visual for both teams
+    marker_letter_type resistance_base_letter = A;
+    marker_letter_type metropolis_base_letter = B;
+
+    marker_letter_type get_base_letter(faction_type faction) const {
+        if (faction == RESISTANCE) return resistance_base_letter; // A
+        return metropolis_base_letter;                            // B
+    }
+};</pre>
+    <div class="cols" style="margin-top:1em">
+      <div class="card col">
+        <h3>🔵 Resistance</h3>
+        <p>Base at site <strong>A</strong></p>
+      </div>
+      <div class="card col">
+        <h3>🟢 Metropolis</h3>
+        <p>Base at site <strong>B</strong></p>
+      </div>
+    </div>
+    <p class="file-ref">arena_submodes.h</p>
+  </div>
+
+  <!-- ── SLIDE 4: Round Start — Flag Spawning ── -->
+  <div class="slide">
+    <h2>Round Start — Flag Spawning</h2>
+    <p>Called from <code>setup_round()</code> at the beginning of every round:</p>
+    <pre>// 1. Delete all pre-existing flags (map defaults or leftover from last round)
+cosm.for_each_having&lt;components::item&gt;([&amp;](const auto&amp; handle) {
+    if (handle.get_flavour_id() == ctf_rules-&gt;flag_flavour)
+        q.push_back(handle.get_id());
+});
+reverse_perform_deletions(q, cosm);
+
+// 2. Spawn exactly one fresh flag per participating faction
+const auto participating = calc_participating_factions(in);
+
+participating.for_each([&amp;](faction_type flag_owner) {
+    if (const auto base_pos = find_ctf_base_position(cosm, *ctf_rules, flag_owner)) {
+        auto flag = just_create_entity(access, cosm, ctf_rules-&gt;flag_flavour);
+        flag.set_logic_transform(*base_pos);
+        current_round.ctf_flags[flag_owner].flag_entity = flag.get_id();
+    }
+});</pre>
+    <p class="file-ref">arena_mode.cpp ~line 1258</p>
+  </div>
+
+  <!-- ── SLIDE 5: How Base Position is Found ── -->
+  <div class="slide">
+    <h2>Finding the Base Position</h2>
+    <p><code>find_ctf_base_position()</code> scans all <code>area_marker</code> entities in the world:</p>
+    <pre>// CTF bases reuse the bomb-site marker infrastructure
+// differentiated only by their letter (A or B)
+
+cosm.for_each_having&lt;invariants::area_marker&gt;([&amp;](const auto&amp; area) {
+    if (!is_bombsite(marker.type))  return;     // must be a site marker
+    if (marker_comp-&gt;letter != desired_letter)  return; // must match A or B
+
+    result = area.find_aabb()-&gt;get_center();    // ← flag spawns here
+});</pre>
+    <div class="card" style="margin-top:1em">
+      <h3>Key point</h3>
+      <p>CTF bases are placed in the map editor exactly like bomb sites — the letter label is all that distinguishes them. <code>get_base_letter()</code> maps each faction to the right letter.</p>
+    </div>
+    <p class="file-ref">arena_mode.cpp ~line 107</p>
+  </div>
+
+  <!-- ── SLIDE 6: Flag State Machine ── -->
+  <div class="slide">
+    <h2>Flag State Machine</h2>
+    <p>Each flag tracks its own <code>ctf_flag_runtime_state</code>:</p>
+    <div class="state-diagram">
+      <div>
+        <div class="state-box" style="border-color:#238636">AT_BASE</div>
+        <span class="state-label">flag at spawn point</span>
+      </div>
+      <div class="state-arrow">
+        <span>→</span>
+        <div>picked up</div>
+      </div>
+      <div>
+        <div class="state-box" style="border-color:#9e6a03">CARRIED</div>
+        <span class="state-label">player holding it</span>
+      </div>
+      <div class="state-arrow">
+        <span>→</span>
+        <div>player dies / drops</div>
+      </div>
+      <div>
+        <div class="state-box" style="border-color:#b62324">DROPPED</div>
+        <span class="state-label">on the ground</span>
+      </div>
+      <div class="state-arrow">
+        <span>→</span>
+        <div>timer expires</div>
+      </div>
+      <div>
+        <div class="state-box" style="border-color:#238636">AT_BASE</div>
+        <span class="state-label">auto-returned</span>
+      </div>
+    </div>
+    <ul style="margin-top:0.5em">
+      <li><strong>AT_BASE →CARRIED</strong>: enemy player picks up the flag (item transfer event)</li>
+      <li><strong>CARRIED → DROPPED</strong>: carrier dies or drops it voluntarily</li>
+      <li><strong>DROPPED → AT_BASE</strong>: auto-return after a short timer via <code>respawn_flag_at_base()</code></li>
+    </ul>
+    <p class="file-ref">arena_mode.cpp ~line 4071 — <code>respawn_flag_at_base</code></p>
+  </div>
+
+  <!-- ── SLIDE 7: Scoring a Capture ── -->
+  <div class="slide">
+    <h2>Scoring a Capture</h2>
+    <p>Checked every tick in <code>mode_post_solve()</code>:</p>
+    <pre>// Conditions to score:
+const bool own_flag_home   = own_flag.state == AT_BASE &amp;&amp; cosm[own_flag.flag_entity];
+const bool carrier_at_base = is_inside_ctf_base(cosm, *ctf_rules, faction, pos);
+const bool holding_enemy   = enemy_flag.carrier == player_id;
+
+if (holding_enemy &amp;&amp; own_flag_home &amp;&amp; carrier_at_base) {
+    step.queue_deletion_of(enemy_flag_entity, "CTF capture scored");
+    enemy_flag = {};                      // reset enemy flag state
+    s-&gt;captures += 1;                     // add to stats
+    standard_victory(in, step, faction);  // check score_to_win
+}</pre>
+    <div class="card" style="margin-top:0.8em">
+      <h3>Three conditions must all be true</h3>
+      <ul>
+        <li>Player is carrying the <strong>enemy</strong> flag</li>
+        <li>Your own flag is <strong>still at its base</strong> (not stolen)</li>
+        <li>Player is <strong>inside their own base</strong> zone</li>
+      </ul>
+    </div>
+    <p class="file-ref">arena_mode.cpp ~line 4213</p>
+  </div>
+
+  <!-- ── SLIDE 8: Win Condition ── -->
+  <div class="slide">
+    <h2>Win Condition</h2>
+    <pre>// After every successful capture:
+standard_victory(in, step, faction);
+
+// Inside standard_victory — checks cumulative faction score:
+return factions[winner].score &gt;= subrules.score_to_win;  // default: 3
+</pre>
+    <div class="cols">
+      <div class="card col">
+        <h3>score_to_win</h3>
+        <p>Configurable per match.<br>Default = <strong>3 captures</strong>.</p>
+      </div>
+      <div class="card col">
+        <h3>standard_victory</h3>
+        <p>Ends the round, awards the win, triggers round-end delay before next round starts.</p>
+      </div>
+    </div>
+    <p class="file-ref">arena_mode.cpp ~line 1967</p>
+  </div>
+
+  <!-- ── SLIDE 9: Round Reset ── -->
+  <div class="slide">
+    <h2>Round Reset</h2>
+    <p>At the end of the round-end delay, <code>start_next_round()</code> is called:</p>
+    <pre>// CTF forces a FULL equipment reset — no carried weapons persist
+const auto rst =
+    std::holds_alternative&lt;capture_the_flag_rules&gt;(in.rules.subrules)
+    ? round_start_type::DONT_KEEP_EQUIPMENTS
+    : round_start_type::KEEP_EQUIPMENTS;
+
+start_next_round(in, step, rst);</pre>
+    <p style="margin-top:0.8em">Then <code>setup_round()</code> runs again:</p>
+    <ul>
+      <li>All old flag entities deleted</li>
+      <li>Two fresh flags spawned at A and B</li>
+      <li>All player inventories cleared</li>
+      <li>Players respawned at their faction spawns</li>
+    </ul>
+    <p class="file-ref">arena_mode.cpp ~line 3834</p>
+  </div>
+
+  <!-- ── SLIDE 10: Guards vs Bomb Mode ── -->
+  <div class="slide">
+    <h2>Guards: CTF Disables Bomb Logic</h2>
+    <p>CTF shares the arena with bomb-defusal infrastructure. Three explicit guards disable it:</p>
+    <div class="card">
+      <h3>1 — No bomb spawned on map</h3>
+      <pre style="margin-top:0.4em">if (in.rules.has_bomb_mechanics() &amp;&amp; !is_ctf) {
+    give_bomb_to_random_player(in, step);
+}</pre>
+    </div>
+    <div class="card">
+      <h3>2 — Plant command rejected</h3>
+      <pre style="margin-top:0.4em">if (!std::holds_alternative&lt;capture_the_flag_rules&gt;(in.rules.subrules)) {
+    on_bomb_entity(in, [&amp;](auto typed_bomb) { ... });
+}</pre>
+    </div>
+    <div class="card">
+      <h3>3 — Bomb win-condition skipped</h3>
+      <pre style="margin-top:0.4em">if (in.rules.has_bomb_mechanics() &amp;&amp; !is_ctf_mode) {
+    /* bomb-based win conditions */
+}</pre>
+    </div>
+    <p class="file-ref">arena_mode.cpp ~lines 1252, 2276, 2120</p>
+  </div>
+
+  <!-- ── SLIDE 11: Summary ── -->
+  <div class="slide">
+    <h2>Summary</h2>
+    <div class="cols">
+      <div class="col">
+        <div class="card">
+          <h3>Round start</h3>
+          <p>Delete old flags → spawn one per faction at their lettered base marker</p>
+        </div>
+        <div class="card" style="margin-top:0.8em">
+          <h3>Flag states</h3>
+          <p><code>AT_BASE → CARRIED → DROPPED → AT_BASE</code></p>
+        </div>
+        <div class="card" style="margin-top:0.8em">
+          <h3>Capture</h3>
+          <p>Carry enemy flag to your own base while yours is still home</p>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card">
+          <h3>Win</h3>
+          <p>First to <code>score_to_win</code> (default 3) captures</p>
+        </div>
+        <div class="card" style="margin-top:0.8em">
+          <h3>Round end</h3>
+          <p>Full inventory wipe → fresh respawn → new flags</p>
+        </div>
+        <div class="card" style="margin-top:0.8em">
+          <h3>Bomb guards</h3>
+          <p>Bomb spawn, plant command, and bomb win-conditions are all blocked in CTF</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /deck -->
+
+<div class="nav">
+  <button onclick="go(-1)">← Prev</button>
+  <span class="counter" id="counter"></span>
+  <button onclick="go(+1)">Next →</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let cur = 0;
+
+  function show(n) {
+    slides[cur].classList.remove('active');
+    cur = Math.max(0, Math.min(n, slides.length - 1));
+    slides[cur].classList.add('active');
+    document.getElementById('counter').textContent = (cur + 1) + ' / ' + slides.length;
+  }
+
+  function go(d) { show(cur + d); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(+1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   go(-1);
+  });
+
+  show(0);
+</script>
+</body>
+</html>
