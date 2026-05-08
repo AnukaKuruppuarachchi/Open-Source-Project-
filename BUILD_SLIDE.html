@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Build & Install — Hypersomnia CTF</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0d1117; color: #c9d1d9; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px; }
+
+  .slide { width: 100%; max-width: 1100px; }
+
+  h1 { font-size: 2.2rem; color: #58a6ff; margin-bottom: 0.2em; }
+  h3 { font-size: 1rem; color: #79c0ff; margin-bottom: 0.4em; }
+  p, li { font-size: 0.95rem; line-height: 1.6; }
+  ul { padding-left: 1.2em; }
+  li { margin-bottom: 0.2em; }
+
+  .subtitle { font-size: 1rem; color: #8b949e; margin-bottom: 1.2em; }
+
+  pre, code {
+    font-family: 'Cascadia Code', 'Consolas', monospace;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #e6edf3;
+  }
+  pre { padding: 0.7em 1em; font-size: 0.82rem; overflow-x: auto; }
+  code { padding: 0.1em 0.35em; font-size: 0.85em; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  .card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 0.9em 1em;
+  }
+
+  .step-num {
+    display: inline-block;
+    background: #1f6feb;
+    color: #fff;
+    border-radius: 50%;
+    width: 22px; height: 22px;
+    text-align: center;
+    line-height: 22px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-right: 6px;
+    flex-shrink: 0;
+  }
+  .step-header { display: flex; align-items: center; margin-bottom: 0.5em; }
+
+  .tag {
+    display: inline-block;
+    padding: 0.1em 0.5em;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 4px;
+    background: #21262d;
+    border: 1px solid #30363d;
+    color: #8b949e;
+  }
+</style>
+</head>
+<body>
+<div class="slide">
+
+  <h1>Build &amp; Install — Hypersomnia CTF</h1>
+  <p class="subtitle">Windows · clang-cl · Ninja · CMake</p>
+
+  <div class="grid">
+
+    <!-- Step 1 -->
+    <div class="card">
+      <div class="step-header"><span class="step-num">1</span><h3>Prerequisites</h3></div>
+      <ul>
+        <li><strong>VS Build Tools 2022</strong> — "C++ Desktop" workload</li>
+        <li><strong>LLVM 19</strong> — provides <code>clang-cl</code> + <code>lld-link</code> on PATH</li>
+        <li><strong>CMake 4.3+</strong> &amp; <strong>Ninja</strong> — on PATH</li>
+        <li><strong>OpenSSL Win64</strong> — install to <code>C:\OpenSSL-v32-Win64</code></li>
+        <li><strong>Git</strong> — for submodule population</li>
+      </ul>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="card">
+      <div class="step-header"><span class="step-num">2</span><h3>Get the Source</h3></div>
+      <pre># Clone CTF fork
+git clone https://github.com/AnukaKuruppuarachchi/Hypersomnia_CTF.git
+
+# Clone upstream to get submodules
+git clone --recurse-submodules \
+  https://github.com/TeamHypersomnia/Hypersomnia.git upstream
+
+# Copy submodule content into CTF fork
+robocopy upstream\src\3rdparty \
+  Hypersomnia_CTF\src\3rdparty /E /XD .git</pre>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="card">
+      <div class="step-header"><span class="step-num">3</span><h3>CMake Configure</h3></div>
+      <pre>call vcvarsall.bat x64
+
+cmake -S . -B build -G Ninja ^
+  -DCMAKE_C_COMPILER=clang-cl ^
+  -DCMAKE_CXX_COMPILER=clang-cl ^
+  -DCMAKE_LINKER=lld-link ^
+  -DARCHITECTURE=x64 ^
+  -DOPENSSL_ROOT_DIR="C:\OpenSSL-v32-Win64" ^
+  -DOPENSSL_USE_STATIC_LIBS=FALSE ^
+  -DALSOFT_UPDATE_BUILD_VERSION=OFF ^
+  -DCMAKE_POLICY_VERSION_MINIMUM=3.5</pre>
+      <p style="margin-top:0.5em; color:#8b949e; font-size:0.8rem">
+        <code>ALSOFT_UPDATE_BUILD_VERSION=OFF</code> — prevents openal-soft reading missing <code>.git/modules/*/index</code>
+      </p>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="card">
+      <div class="step-header"><span class="step-num">4</span><h3>Build</h3></div>
+      <pre>cd build
+ninja</pre>
+      <ul style="margin-top:0.6em">
+        <li>Compiles <strong>791 targets</strong></li>
+        <li>Output: <code>build\Hypersomnia.exe</code></li>
+        <li>Incremental — only changed files recompile</li>
+      </ul>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="card">
+      <div class="step-header"><span class="step-num">5</span><h3>Run</h3></div>
+      <pre>cd build
+ninja run</pre>
+      <p style="margin-top:0.6em"><code>ninja run</code> launches the exe from the correct working directory so assets are found.</p>
+      <p style="margin-top:0.5em; color:#8b949e; font-size:0.8rem">Always source <code>vcvarsall.bat x64</code> first — the build environment must be active.</p>
+    </div>
+
+    <!-- Step 6 — one-liner cheat sheet -->
+    <div class="card">
+      <div class="step-header"><span class="step-num">6</span><h3>Full One-Liner (PowerShell)</h3></div>
+      <pre style="font-size:0.75rem">cmd /c "call `"C:\Program Files (x86)\Microsoft Visual Studio\
+2022\BuildTools\VC\Auxiliary\Build\vcvarsall.bat`" x64 >nul ^
+&amp;&amp; cd /d &lt;REPO&gt;\build ^
+&amp;&amp; ninja ^
+&amp;&amp; echo BUILD_SUCCESS || echo BUILD_FAILED"</pre>
+      <div style="margin-top:0.8em; display:flex; gap:6px; flex-wrap:wrap">
+        <span class="tag">clang-cl 19</span>
+        <span class="tag">lld-link</span>
+        <span class="tag">Ninja</span>
+        <span class="tag">CMake 4.3</span>
+        <span class="tag">OpenSSL 3</span>
+        <span class="tag">VS BuildTools 2022</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

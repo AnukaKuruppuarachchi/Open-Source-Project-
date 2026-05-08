@@ -1,0 +1,431 @@
+/* 
+	Kompresować/podpisywać jsona bez whitespaców?
+*/
+
+/* 
+	Last changed nie musi byc filesystemowy - jest generowany przez nas w aplikacji.
+	To jest data ostatniej faktycznej zmiany.
+	To moze byc np. augs::secs_since_epoch
+
+	Ten version timestamp przecież można formatować w czytelnym formacie, czemu nie
+		dajmy po prostu UTC zeby tez nie zdradzalo timezona czyjegos i elo
+		dobrze to dziala nawet z date.h
+
+		Lokalne czasy bylyby difficult to get right
+		musielibysmy sie pierdzielic z tm.h/tm.cpp
+
+	Na razie dla ez security i tak mozemy zrobic samo proste porownanie intami po kolei czy jest nowsza zamiast calego parsowania
+	(nie wiadomo jak bardzo bezpieczny jest ten parse, date mozna i tak tez latwo sparsowac z tego i wlasciwie tylko to byloby wazne do jakiegos pokazywania)
+		Takze luz nawet ten parse nie jest jakis super potrzebny
+
+	ew. zawsze po sanityzacji mozemy zrobic parse bo wiemy ze tu same numerki maja byc
+		tylko czy istringstream sczyta z leading zeros? to i tak musimy wiedziec do tego napalowego porownywania
+		ŻADEN SSCANF, aktualnie LEKSYKOGRAFICZNY tu zrobi robote!
+			ten sam format przecież, i zawsze UTC, pierwszy tiebreaker rozstrzyga
+			operator< na stringach tu zrobi robote
+*/
+"meta": {
+	"name": "example",
+	"version_timestamp": "2022-06-10 01:55:25.384753 UTC"
+},
+
+/*
+	Resource definiujemy razem w środku, od razu ze sciezka.
+
+	Za: 
+	- Internal resource nie ma sensu rozdzielac i je bedziemy definiowac od razu.
+	- Od razu widzisz wlasciwosci danej sciezki
+
+	Przeciw:
+	- Nieistotne - niby spoko byloby miec wykaz wszystkich sciezek skondensowany
+
+	I teraz jeszcze jak robimy zeby po zmianie pnga nam sie nie rozwalala historia
+		ale tez ogolnie zeby zachowywala sie integralnosc stanu?
+
+	M. in. czy powinnismy zachowac rozmiar obrazkow i dlugosci dzwiekow?
+
+	Tak naprawde to nie rozwali nam sie historia nawet jak pozmieniaja sie width/height
+	bo to dopiero bedzie mialo efekt realny po translacji na swiat gry
+		Historia to przecież dosłownie tylko create/destroy/mod property
+			to sie nie zmieni w zależności od contentu 
+			nawet jak plik wywalimy, to jeśli jest używany to możemy tu trzymać wpis dopóki nie znajdziemy przekierowania
+		Także nie storowałbym raczej w środku width/height/duration
+
+	Co z instancjonowanymi grupami? Albo w ogóle grupami?
+	Co z intancjonowaniem rzeczy typu całe akwarium?
+		To po prostu chyba <aquarium>
+		Te rzeczy będą w tabie Special pod officialem, normalnie też w folderach, 
+		normalnie może być duża lista specjalnych obiektów.
+		tak jak normalne Files masz official/project, to tutaj będzie taka długa oficjalna lista specialów
+
+		One mogą mieć argumenty potem nawet identyfikatory spritów
+		ok... tylko coś typu aquarium może mieć kilka warstw też więc nie wypada wrzucać jej do jednej
+			musi mieć jako property instancji, domyślnie wybierze jakieś pierwszy obstacle layer, pierwszy GROUND layer itp. ale to do wybrania jest
+
+	Teoretycznie takie rzeczy jak spawny albo lighty nie muszą mieć render layerów
+	Ale można i tak celem organizacji im przydzielać takie
+
+	~~Jak upuszczasz specialsa na scenę to tworzy się domyślnie np. Lights layer 1 jeśli nie ma jeszcze layera tego typu~~
+		Aktualnie nie, bo layery nie beda mialy typow.
+		A na start damy jakas jedna.
+
+	GRUPY
+	Grupy jesli potrzebujemy to robimy tak samo jak layery! No problem.
+	Nie identyfikujemy entitow tylko dla grup. W srodku po prostu piszemy do czego przynaleza.
+
+	Jak już se prześlesz jsona to też od razu leksykograficznie możesz wydedukować ścieżki kolejnych plików
+
+	Tutaj leksykograficznie (nie naturalnie)
+
+	Po rozszerzeniu rozpoznajemy co to jest
+
+	Tu przy serializacji jeszcze tym bardziej bedzie trzeba manualnie jesli chcemy nie powtarzac defaultow
+		Reader jest ok taki jaki jest.
+			- On po prostu pomija pola ktorych nie ma
+		Ale zdaje sie ze writer bedzie musial przyjmowac obiekt zrodlowy
+			- Nie wystarczy wlasnie defaultowy w rozumieniu C++
+			- Tylko w przypadku overridow chyba musi byc
+		Juz mamy cos takiego w lua - tym dokladnie jest user config
+			- Tylko ze dla lua mamy skrypt w lua ktory robi diffa a tutaj chyba trzeba natywnie
+			- Wiadomo ze kontenery czy cos takiego to nie robimy delt skomplikowanych tylko od nowa piszemy
+	
+	Co z animacjami?
+		- Wirtualizujemy to, tj. wszystkie propty takie same jak dla spritów
+			- Nawet nie rozpakowywujemy tego na png
+			- Dlugosci klatek czytamy z gifa!
+			- Shape tak samo mozemy miec
+			- tylko je aplikujemy do wszystkich klatek, zreszta po prostu sprite component tak samo bedzie w animacjach
+		- Tylko kiedy w ogóle następuje rozpakowywanie tych gifów?
+			- Musimy temu jakoś support chyba w viewablach zrobić
+			- Bo na razie po prostu dawaliśmy ścieżki viewablom i się nie przejmowaliśmy
+		- Ale dla autora to w dosłownie ogóle nie będzie miało znaczenia czy to sprite czy animacja
+			- Jedyna różnica to to że coś się rusza na ekranie
+		- Atlas packer czyta natywnie z pngow wiec albo
+			- dajemy packerowi sciezki typu fish.gif@1, fish.gif@2
+			- albo rozpakowujemy do pngow do keszy
+				- bardziej stateless i mniej complex z takimi sciezkami chyba
+*/
+
+/*
+	Może się wydawać kuszące żeby robić ścieżki jako klucze
+	ale lepiej żeby deserializator wczytywał to do tablicy zamiast niepotrzebnie robił sobie w środku mapę
+	My i tak bedziemy sobie robić mape z identyfikatorów
+
+	Reader po prostu niech odrzuca duplikaty
+		Nawet jakbysmy zostawili to czy cos by nam to rozwalilo?
+		Po prostu bylyby dwa resourcy pointujace do tego samego pliku, nawet bym powiedzial ficzer
+		Tylko ze edytor se przebuduje filesystem po swojemu i tak
+	Pamietajmy ze jakakolwiek unikalnosc ma znaczenie tylko przy serializacji
+	Runtime sie posluguje idami binarnymi do wszelkiej identyfikacji
+	możemy to sanityzować na wszelki wypadek
+	rapidjson uzywa std::multimap wiec tbh lepiej zebysmy my mieli kontrole nad tym jak to mapujemy a to sie ladowalo do prostej sekwencji zawsze
+*/
+
+"external_resources": [
+	{
+		"path": "gfx/abc.png",
+		"id": "abc",
+		"file_hash": "aEdhJHk83dLkfJGH8932FDS"
+	},
+
+	{
+		"path": "gfx/fish.gif",
+		"id": "fish",
+		"file_hash": "gmBOD9342podJ8QlaSDLKf8",
+
+		"color": [255, 255, 255, 255],
+
+		"script_arguments": {
+			// Wszystko tak samo jak w normalnym png, tylko wewnętrznie sobie to wrzucamy
+			"radius": "15"
+		}
+	},
+
+	"sfx/background_ambience.ogg": {
+		"id": "background_ambience",
+		"file_hash": "fklj389sDLjGFLDkjh894FL"
+	},
+
+	"scripts/crate_mover.lua": {
+		"id": "crate_mover",
+		"file_hash": "r8932jfdsxXJKHdsFkHJjhJ"
+	},
+
+	"gfx/magic_crate.png": {
+		"id": "sprite",
+		"script": "crate_mover",
+
+		"domain": "PHYSICAL",
+
+		"as_physical": {
+			"density": 3,
+			"friction": 21.0
+		},
+
+		"as_nonphysical": {
+			"wall_illumination": true,
+			"occlude_ground_neons": true
+		},
+
+		"script_arguments": {
+			// Wszystkie argumenty do script arguments beda stringami,
+			// dokladnie tak jak bedziemy je podawac do interpretera lua,
+			// i taka generalizacja bedzie wygodniejsza
+			"radius": "10"
+		}
+	}
+],
+
+
+/*
+	internal resource bedziemy zapisywac jako <internal_resource>
+	zeby wiedziec do ktorego sie odnosic i nie kolidowalo nam z plikami
+
+	Czy w ogóle potrzebujemy robić jakieś internal resources?
+		- Byc moze jako templatki dla np. swiatel.
+		- To nie ma znaczenia ze kazde swiatlo fizycznie w swiecie ma w instancji dane o atenuacji - albo ich nie ma. 
+			- To po prostu dla wygody uzytkowania.
+		- Special internal resource juz moze byc tylko jednym typem
+			- nie da sie wybrac tak jak dla sprita czy chce byc obstaclem czy dekoracja statyczna
+				- choc to powinno byc implicit z parametrow chyba tez
+				
+	Tu w ogóle key jest jednoczesnie idem.
+	To chyba zwięźlej będzie od razu tego uzyć jako keya
+
+	potem jakis tab pewnie  "Special" obok "Files" 
+	i w Special taki wirtualny filesystem ze swiatlami np.
+
+	W specialsach też mogą znalezc sie typy broni do wrzucania na mape, czemu nie
+
+	Musimy zaznaczać typ danego internal resourca bo tego już nie jesteśmy w stanie wykryć z rozszerzenia tak jak zasobów.
+	Myślałem czy np. nie lepiej lights = { } i tu w srodku wszystkie światła
+		- Ale jak mamy wszystkie to przynajmniej parser od razu wykrywa czy nie ma konfliktu nazw
+
+	Dobrze byłoby oznaczać w nazwie typu resourca że coś jest oficjalne
+		- Żeby uniknąć konfliktu nazw z naszymi resourcami
+			- żeby nie musieć nawet sprawdzać tego
+
+	tak samo prefaby
+	no i jak te idy nadajemy? Bo jak to nie bedzie w filesystemie, to znaczy ze bedzie w tym wirtualnym
+		- mozemy sprawdzac czy jest unikalna nazwa
+		- i tez wymagac alphanumeric_ dla kompatybilnosci jakbysmy chcieli to pisac do plikow
+
+	Since the official resources might get very large,
+	we might want to keep the resource properties within separate jsons just like we do now with lua files
+	and read them trivially on demand
+	
+	Otherwise we'd always have to parse the entire json with all resources (not necessarily load all files)
+		- Will it really be that big of a deal?
+			- Besides won't we have it encoded in binary?
+	
+	I think ultimately all binary properties of resources we'll have in binary
+		W swoim czasie przekonwertujemy te pliki lua na po prostu instrukcje cpp
+			- jakis tool do tego zeby sie to szybko robilo
+	
+	Bo chcielibysmy ostatecznie zeby wszystkie resourcy oficjalne, prefaby typu awkaria, obrazki z proptami itp
+		- to zeby to wszystko bylo juz w formie resourcow editora zeby normalnie sie to dodawalo podczas edytowania
+			- bo to by bylo durne jakbysmy to wszytko resolvowali podczas generowania cosmosu
+			- a tak to jest nawet prostsza specyfikacja danych dla nas
+
+	Dlatego od razu też zróbmy żeby nie wypełniać generowanego cosmosu wszystkimi oficjalnymi flavorami
+	a tylko tymi które explicitly dodaliśmy z edytora
+		- potem nawet zrobi sie ticki typu
+			- Advanced->"Use official weapons"
+			- Advanced->"Use official characters"
+		- jak ktos odznaczy to okienko bedzie warnowało
+
+	
+	No i teraz jeszcze czy internal resource potrzebuja oddzielnie klas instance i resource?
+		- Czy np nie lepiej uznac ze 
+*/
+
+"internal_resources": {
+	"<strong_light>": {
+		"class": "LIGHT",
+
+		"attenuation": {
+			"constant": 1,
+			"linear": 1,
+			"quadratic": 1
+		}
+	},
+
+	"<cv_47>": {
+		"class": "WEAPON",
+
+		"mag_sprite": "abc",
+		"mag_capacity": 30
+	}
+},
+
+/* 
+	A jak panie zamierzasz stan skryptów przez sieć przesyłać?
+	One muszą być bezstanowe! Tylko logiczne
+	Ewentualnie mieć jakąś małą binarną wydzieloną pamięć w obiekcie
+
+	Array! Kolejnosc layerow w danym typie tez ma znaczenie!
+	Domyślnie layery są nazywane po ich typie + indeksie,
+	np.
+
+	Foreground layer 1,
+	Foreground layer 2
+
+	Tutaj jest na odwrot kolejnosc bo tak jest intuicyjnie dla tworcy,
+	czyli u góry te co na wierzchu, w przeciwienstwie do tego jak w kodzie
+	bo to wyznacza realna kolejnosc operacji renderowania.
+
+	Teraz jak rozkminiliśmy że te layery to tylko takie abstrakcyjne kontenery,
+	one nie musza miec nawet typów żadnych.
+
+	Ale beda miały właściwości typu czy są widoczne, więc trzeba je zrobić w oddzielnej tablicy.
+	(bo teoretycznie by mozna bylo je wydedukowac jak grupy z samego tego jakie sa "layer": "moja warstwa" w objectach)
+*/
+
+"layers": [
+	{
+		"name": "New layer 1",
+		"visible": false
+	},
+
+	{
+		"name": "New layer 2",
+		"visible": true
+	},
+
+	{
+		"name": "Smieci na podlodze",
+		"visible": true
+	},
+
+	{
+		"name": "Podloga lab",
+		"visible": true
+	},
+
+	{
+		"name": "Podloga spawn",
+		"visible": true
+	},
+
+	{
+		"name": "Grunt",
+		"visible": true
+	}
+],
+
+/*
+	Jak potem bedziemy rozkminiali prefaby to bym nie przekombinowywal ich tez
+	Prefab to po prostu skupisko kilku obiektow, one moga byc po nazwie
+
+	Prefaby moga byc nazywane "[]",
+	co tez znowu pozwoli nam potem przy parsowaniu rozpoznac ze chodzi o prefab
+
+	Tylko tu znowu pytanie jak one z layerami beda dzialac
+
+	A gdyby tak layery definiowały partial order?
+	Czyli layery po prostu nie sa fizyczne/niefizyczne itp
+	Eureka!
+	No i nie potrzebujemy wcale tabów w hierarchii osobnych na audiowizualne i specjalne.
+	To wszystko jest razem wzięte.
+
+	To jest przeciez tylko literalnie dla wygody autora nie zeby definiowac czy cos jest fizyczne czy nie
+		Ok, tylko co jak sprite jest wrzucony miedzy dwoma obstaclami?
+		Nie jestes tez w stanie powiedziec ze "ok jesli bedzie nad wszystkimi obstaclami to wtedy z automatu foreground"
+		bo zobacz co sie stanie jak dwa prefaby powiedzmy akwariow bedziesz mial jeden nad drugim, jest intertwined
+
+		Będziemy musieli po prostu per-sprite chyba jakoś zaznaczać czy to jest fore czy back (jesli dekoracja)
+			- To i tak jest rozsądniejsze niż edycja własności layera
+		
+		Nazwiemy to Render group: [FOREGROUND|BACKGROUND] 
+			- ewenutalnie jeszcze PHYSICAL gdyby ktos chcial niefizyczna derokacje na layeru fizycznym
+			- ale to by bylo bez sensu bo to by glitchowało chyba troche rzeczy
+
+	Jak w ogóle drag&dropujesz nową rzecz na scenę to można dodać ja z automatu do layera w którym znajduje sie hoverowany w momencie upuszczenia myszy entity
+*/
+
+"prefabs": {
+	"[double_doors]": [
+		{
+			"type": "drzwi",
+			"name": "drzwi_left",
+			"pos": [0, 0]
+		}
+	]
+},
+
+/* 
+	Sekwencja bo rendering order w srodku layera ma znaczenie.
+	I jak to sortujemy? Też po layerach?
+	Jeśli nie to musielibyśmy trzymać sorting id w środku.
+
+	Nie wiem czy jest sens też się aż tak przejmować tym żeby się nie zmieniały zbytnio pliki po każdym zapisaniu.
+*/
+
+"nodes": [
+	{
+		"type": "lab_podloga",
+		"pos": [23, 45.02],
+		"layer": "Podloga lab",
+	},
+	{
+		"type": "abc",
+		"name": "tadam",
+		"pos": [23, 45.02],
+		"layer": "Foreground layer 1"
+	},
+
+	{
+		"type": "lab_podloga",
+		"pos": [23, 45.02],
+		"layer": "Podloga lab",
+		"group": "kilkapodlog"
+	},
+	{
+		"type": "magic_crate",
+		"name": "ruszajaca skrzynka 1",
+
+		"script_arguments": {
+			"radius": "20",
+			"chat_message": "\"tadam\""
+		},
+
+		"pos": [23, 45.02],
+		"layer": "Solid obstacles 1"
+
+	},
+
+	{
+		"type": "@<light>",
+		"pos": [23, 45.02],
+		"layer": "Light layer 1",
+		"attenuation": {
+			"constant": 2
+		}
+	},
+
+	{
+		"type": "@crate",
+		"name": "mid crate",
+		"pos": [23, 45.02],
+		"layer": "Mid layer"
+	},
+
+	{
+		"type": "@[aquarium]",
+		"name": "CT spawn aquarium",
+		"pos": [23, 45.02],
+		"layer": "Spawnpoint layer 1"
+	},
+
+	{
+		"type": "@<spawnpoint>",
+		"team": "Atlantis",
+		"pos": [23, 45.02],
+		"layer": "Spawnpoints"
+	}
+
+	{
+		"type": "[double_doors]",
+		"pos": [35, 543]
+	}
+]
