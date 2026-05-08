@@ -1,6 +1,6 @@
 # Capture the Flag (CTF) Game Mode for Hypersomnia
 
-## Overview
+# Overview
 
 This project implements a **Capture the Flag (CTF) game mode** for the open-source multiplayer game engine **Hypersomnia**.
 
@@ -10,7 +10,7 @@ The project is developed as part of an **Open Source Software module**.
 
 ---
 
-## Gameplay Screenshots
+# Gameplay Screenshots
 
 ![](Docs/images/CTF%20-%20Image%201.jpeg)
 
@@ -27,16 +27,16 @@ The project is developed as part of an **Open Source Software module**.
 ---
 
 
-### Group Members
+# Group Members
 
 - Anuka Kuruppuarachchi  
 - Claudia O'Callaghan  
 - Daniel Wagner  
 
-### Project Repository
+## Project Repository
 https://github.com/TeamHypersomnia/Hypersomnia
 
-### Original Hypersomnia Repository
+## Original Hypersomnia Repository
 https://github.com/TeamHypersomnia/Hypersomnia
 
 ---
@@ -89,7 +89,7 @@ If time permits, additional features may include:
 - **Visual Studio Code** – Development environment
 
 
-# Testing
+## Testing
 
 New features are tested through:
 
@@ -144,7 +144,7 @@ Please include:
 - Steps to reproduce the issue
 - Expected behaviour
 - Screenshots or logs if applicable
-
+- Please use our [Issue Template](issue-template-.md)
 ---
 
 # License
@@ -153,12 +153,12 @@ This project follows the same license as the original Hypersomnia project.
 
 **License:** GNU Affero General Public License v3.0 (AGPL-3.0)
 
-See the `LICENSE` file for full details.
+See the [License](LICENSE.md)  file for full details.
 
 ---
 
 
-## Documentation
+# Documentation
 
 - [Gameplay Guide](Docs/GAMEPLAY.md)
 - [Installation Guide](Docs/INSTALLATION.md)
@@ -167,8 +167,15 @@ See the `LICENSE` file for full details.
 - [Project Governance](Docs/GOVERNANCE.md)
 
 
+---
 
 
+# Need Help?
+If you need any help or support, have a look [here](SUPPORT.md) where you'll find some helpful tips.
+
+
+
+---
 
 # Acknowledgements
 
