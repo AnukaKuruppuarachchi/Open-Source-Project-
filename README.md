@@ -102,7 +102,8 @@ Future improvements may include automated tests and continuous integration.
 ---
 
 # Build Instructions
-For setup steps, see the [BUILD guide](docs/BUILD.md).
+For setup instructions, see the [Build instructions](BUILD.md)
+
 
 
 ---
