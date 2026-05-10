@@ -102,7 +102,7 @@ Future improvements may include automated tests and continuous integration.
 ---
 
 # Build Instructions
-For setup instructions, see the [Build instructions](BUILD.md)
+For setup instructions, see the [Build instructions](Docs/BUILD.md)
 
 
 
@@ -161,7 +161,7 @@ See the [License](LICENSE.md)  file for full details.
 # Documentation
 
 - [Gameplay Guide](Docs/GAMEPLAY.md)
-- [Installation Guide](Docs/INSTALLATION.md)
+- [Installation Guide](Docs/BUILD.md)
 - [Roadmap](Docs/ROADMAP.md)
 - [Support](Docs/SUPPORT.md)
 - [Project Governance](Docs/GOVERNANCE.md)
