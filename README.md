@@ -171,7 +171,7 @@ See the [License](LICENSE.md)  file for full details.
 
 
 # Need Help?
-If you need any help or support, have a look [here](SUPPORT.md) where you'll find some helpful tips.
+If you need any help or support, have a look [here](Docs/SUPPORT.md) where you'll find some helpful tips.
 
 
 
