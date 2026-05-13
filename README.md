@@ -162,7 +162,6 @@ See the [License](LICENSE.md)  file for full details.
 
 - [Gameplay Guide](Docs/GAMEPLAY.md)
 - [Installation Guide](Docs/BUILD.md)
-- [Roadmap](Docs/ROADMAP.md)
 - [Support](Docs/SUPPORT.md)
 - [Project Governance](Docs/GOVERNANCE.md)
 
